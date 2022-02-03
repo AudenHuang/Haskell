@@ -177,5 +177,4 @@ quit state = (state { finished = True }, "Bye bye")
 
 {- Save data -}
 saveToFile :: GameData -> IO ()
-saveToFile gd = undefined
-
+saveToFile gd = writeFile "save_data.txt" (show gd)

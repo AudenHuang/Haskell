@@ -1,6 +1,7 @@
 module World where
+import Data.Maybe
 
-data Object = Obj { obj_name :: String,
+data Object = Obj { obj_name :: ObjectID,
                     obj_longname :: String,
                     obj_desc :: String }
    deriving Eq
@@ -8,9 +9,9 @@ data Object = Obj { obj_name :: String,
 instance Show Object where
    show obj = obj_longname obj
 
-data Exit = Exit { exit_dir :: String,
+data Exit = Exit { exit_dir :: Direction,
                    exit_desc :: String,
-                   room :: String }
+                   room :: RoomID }
    deriving Eq
 
 data Room = Room { room_desc :: String,
@@ -18,8 +19,8 @@ data Room = Room { room_desc :: String,
                    objects :: [Object] }
    deriving Eq
 
-data GameData = GameData { location_id :: String, -- where player is
-                           world :: [(String, Room)],
+data GameData = GameData { location_id :: RoomID, -- where player is
+                           world :: [(RoomID, Room)],
                            inventory :: [Object], -- objects player has
                            poured :: Bool, -- coffee is poured
                            caffeinated :: Bool, -- coffee is drunk
@@ -27,7 +28,7 @@ data GameData = GameData { location_id :: String, -- where player is
                          }
 
 won :: GameData -> Bool
-won gd = location_id gd == "street"
+won gd = location_id gd == Street
 
 data Direction = North | South | East | West | In | Out
     deriving (Eq, Show)
@@ -74,9 +75,9 @@ fullmug   = Obj Mug "a full coffee mug" "A coffee mug containing freshly brewed 
 coffeepot = Obj Coffee "a pot of coffee" "A pot containing freshly brewed coffee"
 mask      = Obj Mask "a piece of mask" "A piecee of mask protect people from catching COVID"
 key       = Obj Key "a key for a door" "A myterious key"
-switch    = Obj Switch "a switch for the light"
+switch    = Obj Switch "a switch for the light" "a switch for the light"
 
-bedroom, kitchen, hall, street, living room :: Room
+bedroom, kitchen, hall, street, livingroom :: Room
 
 bedroom = Room "You are in your bedroom."
                [Exit North "To the north is a kitchen. " Kitchen]

@@ -25,7 +25,7 @@ repl state = do print state
                 putStr "What now? "
                 hFlush stdout
                 cmd <- getLine
-                let (state', msg) = process state (words cmd)
+                let (state', msg) = process state cmd
                 putStrLn msg
                 if (won state') then do putStrLn winmessage
                                         return state'

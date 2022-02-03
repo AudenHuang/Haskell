@@ -204,7 +204,7 @@ parseGet = do symbol "get"
 
 parseDrop :: Parser Action 
 parseDrop = do symbol "drop"
-              Put <$> parseObject
+               Put <$> parseObject
               
 parsePour :: Parser Action 
 parsePour = do symbol "pour"
@@ -232,7 +232,7 @@ parseUse = do symbol "use"
               
 parsePress :: Parser Action 
 parsePress = do symbol "press"
-               Press <$> parseObject
+                Press <$> parseObject
 
 parseInventory :: Parser Action
 parseInventory = do symbol "inventory"
