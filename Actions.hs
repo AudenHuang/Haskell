@@ -1,21 +1,18 @@
 module Actions where
 
 import World
+import Data.Maybe
 
-actions :: String -> Maybe Action
-actions "go"      = Just go
-actions "get"     = Just get
-actions "drop"    = Just put
-actions "pour"    = Just pour
-actions "examine" = Just examine
-actions "drink"   = Just drink
-actions "open"    = Just open
-actions _         = Nothing
-
-commands :: String -> Maybe Command
-commands "quit"      = Just quit
-commands "inventory" = Just inv
-commands _           = Nothing
+actions :: Action -> Move
+actions (Go dir)      = go dir
+actions (Get obj)     = get obj
+actions (Put obj)     = put obj
+actions (Pour obj)    = pour obj
+actions (Examine obj) = examine obj
+actions (Drink obj)   = drink obj
+actions (Open obj)    = open obj
+actions Quit          = quit
+actions Inventory     = inv
 
 {- Given a direction and a room to move from, return the room id in
    that direction, if it exists.
@@ -29,61 +26,66 @@ Just "kitchen"
 Nothing
 -}
 
-move :: String -> Room -> Maybe String
-move dir rm = undefined
+move :: Direction -> Room -> Maybe RoomID
+move dir rm | length [ x | x <- exits rm, exit_dir x == dir ] == 1    = let theRoom = [ x | x <- exits rm, exit_dir x == dir ]
+                                                                        in  Just (room (head theRoom))     
+            | otherwise                                               = Nothing
 
 {- Return True if the object appears in the room. -}
 
-objectHere :: String -> Room -> Bool
-objectHere o rm = undefined
+objectHere :: ObjectID -> Room -> Bool
+objectHere o rm = foldr (||) False  [ o == obj_name object | object <- objects rm ]
 
 {- Given an object id and a room description, return a new room description
    without that object -}
 
-removeObject :: String -> Room -> Room
-removeObject o rm = undefined
+removeObject :: ObjectID -> Room -> Room
+removeObject o rm = Room (room_desc rm) (exits rm)  (filter (\x -> obj_name x /= o) (objects rm))
 
 {- Given an object and a room description, return a new room description
    with that object added -}
 
 addObject :: Object -> Room -> Room
-addObject o rm = undefined
+addObject o rm = Room (room_desc rm) (exits rm) ((objects rm) ++ [o])
 
 {- Given an object id and a list of objects, return the object data. Note
    that you can assume the object is in the list (i.e. that you have
    checked with 'objectHere') -}
 
-findObj :: String -> [Object] -> Object
-findObj o ds = undefined
+findObj :: ObjectID -> [Object] -> Object
+findObj o ds = head (filter (\x -> (obj_name x) == o) ds)
 
 {- Use 'findObj' to find an object in a room description -}
 
-objectData :: String -> Room -> Object
-objectData o rm = undefined
+objectData :: ObjectID -> Room -> Object
+objectData o rm = findObj o (objects rm)
 
 {- Given a game state and a room id, replace the old room information with
    new data. If the room id does not already exist, add it. -}
 
-updateRoom :: GameData -> String -> Room -> GameData
-updateRoom gd rmid rmdata = undefined
+updateRoom :: GameData -> RoomID -> Room -> GameData
+updateRoom gd rmid rmdata = let newWorld = filter (\x -> fst x /= rmid) (world gd)
+                                newRoom = Room (room_desc rmdata) (exits rmdata) (objects rmdata)
+                                in GameData (location_id gd) (newWorld ++ [(rmid, newRoom)]) (inventory gd) (poured gd) (caffeinated gd) (finished gd)
+
 
 {- Given a game state and an object id, find the object in the current
    room and add it to the player's inventory -}
 
-addInv :: GameData -> String -> GameData
-addInv gd obj = undefined
+addInv :: GameData -> ObjectID -> GameData
+addInv gd obj = GameData (location_id gd) (world gd) (inventory gd ++ [objectData obj (getRoomData gd)]) (poured gd) (caffeinated gd) (finished gd) 
 
 {- Given a game state and an object id, remove the object from the
    inventory. Hint: use filter to check if something should still be in
    the inventory. -}
 
-removeInv :: GameData -> String -> GameData
-removeInv gd obj = undefined
+removeInv :: GameData -> ObjectID -> GameData
+removeInv gd obj = GameData (location_id gd) (world gd) (filter (\x -> obj_name x /= obj) (inventory gd)) (poured gd) (caffeinated gd) (finished gd) 
 
 {- Does the inventory in the game state contain the given object? -}
 
-carrying :: GameData -> String -> Bool
-carrying gd obj = undefined
+carrying :: GameData -> ObjectID -> Bool
+carrying gd obj = foldr (||) False [ obj == obj_name o | o <- inventory gd ]
 
 {-
 Define the "go" action. Given a direction and a game state, update the game
@@ -97,8 +99,9 @@ e.g.
 
 -}
 
-go :: Action
-go dir state = undefined
+go :: Direction -> Action
+go direction gd | isJust (move direction (getRoomData gd))  = (gd {location_id = fromJust (move direction (getRoomData gd))}, "OK")
+                | otherwise                                 = (gd, "You can't go this way. It's a dead end,")
 
 {- Remove an item from the current room, and put it in the player's inventory.
    This should only work if the object is in the current room. Use 'objectHere'
@@ -161,13 +164,18 @@ open obj state = undefined
 
 {- Don't update the game state, just list what the player is carrying -}
 
-inv :: Command
+inv :: Action
 inv state = (state, showInv (inventory state))
    where showInv [] = "You aren't carrying anything"
          showInv xs = "You are carrying:\n" ++ showInv' xs
          showInv' [x] = obj_longname x
          showInv' (x:xs) = obj_longname x ++ "\n" ++ showInv' xs
 
-quit :: Command
+quit :: Action
 quit state = (state { finished = True }, "Bye bye")
+
+
+{- Save data -}
+saveToFile :: GameData -> IO ()
+saveToFile gd = undefined
 

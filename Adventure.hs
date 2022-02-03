@@ -2,6 +2,7 @@ module Main where
 
 import World
 import Actions
+import Parsing
 
 import Control.Monad
 import System.IO
@@ -13,14 +14,10 @@ winmessage = "Congratulations, you have made it out of the house.\n" ++
 {- Given a game state, and user input (as a list of words) return a 
    new game state and a message for the user. -}
 
-process :: GameData -> [String] -> (GameData, String)
-process state [cmd,arg] = case actions cmd of
-                            Just fn -> fn arg state
+process :: GameData -> String -> (GameData, String)
+process state input = case runParser input of
+                            Just cmd -> actions cmd state 
                             Nothing -> (state, "I don't understand")
-process state [cmd]     = case commands cmd of
-                            Just fn -> fn state
-                            Nothing -> (state, "I don't understand")
-process state _ = (state, "I don't understand")
 
 repl :: GameData -> IO GameData
 repl state | finished state = return state

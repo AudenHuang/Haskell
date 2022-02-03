@@ -7,6 +7,7 @@ Minor changes by Edwin Brady
 
 module Parsing where
 
+import World
 import Data.Char
 import Control.Monad
 import Control.Applicative hiding (many)
@@ -151,3 +152,111 @@ integer                       =  token int
 
 symbol                        :: String -> Parser String
 symbol xs                     =  token (string xs)
+
+
+{-
+Direction parsers
+-------------
+-}
+parseDirection                :: Parser Direction 
+parseDirection                =  do symbol "north"
+                                    return North
+                             ||| do symbol "south"
+                                    return South 
+                             ||| do symbol "east"
+                                    return East 
+                             ||| do symbol "west"
+                                    return West 
+                             ||| do symbol "in"
+                                    return In 
+                             ||| do symbol "out"
+                                    return Out 
+
+{-
+Object parsers
+-------------
+-}
+parseObject                  :: Parser ObjectID 
+parseObject                 =  do symbol "mug"
+                                  return Mug
+                           ||| do symbol "coffee"
+                                  return Coffee
+                           ||| do symbol "switch"
+                                  return Switch
+                           ||| do symbol "key"
+                                  return Key
+                           ||| do symbol "door"
+                                  return Door
+                           ||| do symbol "mask"
+                                  return Mask
+
+{-
+Action parsers
+-------------
+-}                                  
+parseGo :: Parser Action 
+parseGo = do symbol "go"
+             Go <$> parseDirection
+
+parseGet :: Parser Action 
+parseGet = do symbol "get"
+              Get <$> parseObject
+
+parseDrop :: Parser Action 
+parseDrop = do symbol "drop"
+              Put <$> parseObject
+              
+parsePour :: Parser Action 
+parsePour = do symbol "pour"
+               Pour <$> parseObject
+
+parseExamine :: Parser Action 
+parseExamine = do symbol "examine"
+                  Examine <$> parseObject
+        
+parseDrink :: Parser Action 
+parseDrink = do symbol "drink"
+                Drink <$> parseObject
+
+parseOpen :: Parser Action 
+parseOpen = do symbol "open"
+               Open <$> parseObject
+
+parseWear :: Parser Action 
+parseWear = do symbol "wear"
+               Wear <$> parseObject
+               
+parseUse :: Parser Action 
+parseUse = do symbol "use"
+              Use <$> parseObject
+              
+parsePress :: Parser Action 
+parsePress = do symbol "press"
+               Press <$> parseObject
+
+parseInventory :: Parser Action
+parseInventory = do symbol "inventory"
+                    return Inventory
+
+parseQuit :: Parser Action
+parseQuit = do symbol "quit"
+               return Quit 
+
+parseAction :: Parser Action 
+parseAction = do parseGo 
+              ||| parseGet
+              ||| parseDrop
+              ||| parsePour
+              ||| parseExamine
+              ||| parseDrink
+              ||| parseOpen
+              ||| parseWear
+              ||| parseUse
+              ||| parsePress
+              ||| parseInventory
+              ||| parseQuit
+
+runParser :: String -> Maybe Action
+runParser xs = case parse parseAction xs of
+               [(cmd, "")] -> Just cmd
+               _ -> Nothing

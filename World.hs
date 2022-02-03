@@ -29,6 +29,15 @@ data GameData = GameData { location_id :: String, -- where player is
 won :: GameData -> Bool
 won gd = location_id gd == "street"
 
+data Direction = North | South | East | West | In | Out
+    deriving (Eq, Show)
+    
+data ObjectID = Mug | Coffee | Mask | Key | Switch | Door 
+    deriving (Eq, Show)
+
+data RoomID = Bedroom | Kitchen | LivingRoom | Hall | Street
+    deriving (Eq, Show)
+
 instance Show Room where
     show (Room desc exits objs) = desc ++ "\n" ++ concatMap exit_desc exits ++
                                   showInv objs
@@ -42,50 +51,71 @@ instance Show GameData where
     show gd = show (getRoomData gd)
 
 -- Things which do something to an object and update the game state
-type Action  = String -> GameData -> (GameData, String)
+data Action  = Go Direction
+             | Get ObjectID
+             | Put ObjectID
+             | Examine ObjectID
+             | Pour ObjectID
+             | Drink ObjectID
+             | Open ObjectID
+             | Wear ObjectID
+             | Use ObjectID
+             | Press ObjectID
+             | Inventory
+             | Quit
+             deriving Show
 
 -- Things which just update the game state
-type Command = GameData -> (GameData, String)
+type Move = GameData -> (GameData, String)
 
-mug, fullmug, coffeepot :: Object
-mug       = Obj "mug" "a coffee mug" "A coffee mug"
-fullmug   = Obj "mug" "a full coffee mug" "A coffee mug containing freshly brewed coffee"
-coffeepot = Obj "coffee" "a pot of coffee" "A pot containing freshly brewed coffee"
+mug, fullmug, coffeepot, mask, key, switch :: Object
+mug       = Obj Mug "a coffee mug" "A coffee mug"
+fullmug   = Obj Mug "a full coffee mug" "A coffee mug containing freshly brewed coffee"
+coffeepot = Obj Coffee "a pot of coffee" "A pot containing freshly brewed coffee"
+mask      = Obj Mask "a piece of mask" "A piecee of mask protect people from catching COVID"
+key       = Obj Key "a key for a door" "A myterious key"
+switch    = Obj Switch "a switch for the light"
 
-bedroom, kitchen, hall, street :: Room
+bedroom, kitchen, hall, street, living room :: Room
 
 bedroom = Room "You are in your bedroom."
-               [Exit "north" "To the north is a kitchen. " "kitchen"]
-               [mug]
+               [Exit North "To the north is a kitchen. " Kitchen]
+               [mug, switch]
 
 kitchen = Room "You are in the kitchen."
-               [Exit "south" "To the south is your bedroom. " "bedroom",
-                Exit "west" "To the west is a hallway. " "hall"]
+               [Exit South "To the south is your bedroom. " Bedroom,
+                Exit West "To the west is a hallway. " Hall]
                [coffeepot]
 
 hall = Room "You are in the hallway. The front door is closed. "
-            [Exit "east" "To the east is a kitchen. " "kitchen"]
-            []
+            [Exit East "To the east is a kitchen. " Kitchen,
+             Exit North "To the north is a living room." LivingRoom]
+            [mask]
 
+livingroom = Room "You are in the living room. There's a key on the table."
+            [Exit South "To the south is a hallway. " Hall]
+            [key]
+            
 -- New data about the hall for when we open the door
 
 openedhall = "You are in the hallway. The front door is open. "
-openedexits = [Exit "east" "To the east is a kitchen. " "kitchen",
-               Exit "out" "You can go outside. " "street"]
+openedexits = [Exit East "To the east is a kitchen. " Kitchen,
+               Exit Out "You can go outside. " Street]
 
 street = Room "You have made it out of the house."
-              [Exit "in" "You can go back inside if you like. " "hall"]
+              [Exit In "You can go back inside if you like. " Hall]
               []
 
-gameworld = [("bedroom", bedroom),
-             ("kitchen", kitchen),
-             ("hall", hall),
-             ("street", street)]
+gameworld = [(Bedroom, bedroom),
+             (Kitchen, kitchen),
+             (Hall, hall),
+             (LivingRoom, livingroom),
+             (Street, street)]
 
 initState :: GameData
-initState = GameData "bedroom" gameworld [] False False False
+initState = GameData Bedroom gameworld [] False False False
 
 {- Return the room the player is currently in. -}
 
 getRoomData :: GameData -> Room
-getRoomData gd = maybe undefined id (lookup (location_id gd) (world gd))
+getRoomData gd = fromJust (lookup (location_id gd) (world gd))
