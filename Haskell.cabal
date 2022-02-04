@@ -69,9 +69,9 @@ library
 executable adventure
   main-is: Adventure.hs
   other-modules:
-      Paths_Adventure
+
   hs-source-dirs:
-      app
+
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       Adventure,base >=4.11 && <4.12
