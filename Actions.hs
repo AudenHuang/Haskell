@@ -16,11 +16,6 @@ actions Quit          = quit
 actions Inventory     = inv
 
 
-
-{-gameSave :: Command -> GameSave
-gameSave Save = save-}
-
-
 {- Given a direction and a room to move from, return the room id in
    that direction, if it exists.
 
@@ -207,10 +202,3 @@ inv state = (state, showInv (inventory state))
 
 quit :: Action
 quit state = (state { finished = True }, "Bye bye")
-
-
-{- Save data -}
-save :: GameData -> IO ()
-save gd = do writeFile "save_data.txt" (show gd)
-
-{-load :: String -> IO GameData-}

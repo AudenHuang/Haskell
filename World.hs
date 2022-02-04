@@ -66,7 +66,6 @@ data Command = Go Direction
              | Use ObjectID
              | Press ObjectID
              | Inventory
-             {-| Save-}
              | Quit
              deriving Show
              

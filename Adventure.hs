@@ -25,16 +25,19 @@ repl state = do print state
                 putStr "What now? "
                 hFlush stdout
                 cmd <- getLine
-                {-if cmd == "save" then procSave else do-}
+                if cmd == "save" then do save state
+                                         putStrLn "Saved"
+                                         repl state
+                else do
                 let (state', msg) = process state cmd
                 putStrLn msg
                 if (won state') then do putStrLn winmessage
                                         return state'
                                else repl state'
 
-{-procSave :: GameData -> String -> IO()
-procSave state input = case runParser input of
-                            Just cmd -> gameSave cmd state-}
+save :: GameData -> IO GameData
+save gd = do writeFile "save_data.txt" (show (location_id gd) ++ "\n" ++ show (inventory gd) ++ "\n" ++ show (poured gd) ++ "\n" ++ show (caffeinated gd))
+             return gd
 
 
 main :: IO ()

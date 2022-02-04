@@ -260,8 +260,3 @@ runParser :: String -> Maybe Command
 runParser xs = case parse parseCommand xs of
                [(cmd, "")] -> Just cmd
                _ -> Nothing
-
-
-{-parseSave :: Parser Command
-parseSave = do symbol "save"
-               return Save-}
