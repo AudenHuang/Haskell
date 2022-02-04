@@ -66,18 +66,15 @@ library
   default-language:    Haskell2010
 
 
-executable Haskell
-  -- .hs or .lhs file containing the Main module.
-  main-is:             Main.hs
-
-  -- Modules included in this executable, other than Main.
-  -- other-modules:
-
-  -- LANGUAGE extensions used by modules in this package.
-  -- other-extensions:
-
-  -- Other library packages from which modules are imported.
-  build-depends:       base >=4.11 && <4.12
+executable Adventure-exe
+  main-is: Adventure.hs
+  other-modules:
+      Paths_Adventure
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      Adventure,base >=4.11 && <4.12
 
   -- Directories containing source files.
   hs-source-dirs:      src
