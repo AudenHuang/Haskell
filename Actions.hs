@@ -52,21 +52,16 @@ addObject o rm = Room (room_desc rm) (exits rm) ((objects rm) ++ [o])
    that you can assume the object is in the list (i.e. that you have
    checked with 'objectHere') -}
 
-findObj :: ObjectID -> [Object] -> Maybe Object
---findObj o ds = head (filter (\x -> (obj_name x) == o) ds)
-findObj o ds | length (filter (\x -> (obj_name x) == o) ds) > 0       = let objList = (filter (\x -> (obj_name x) == o) ds)
-                                                                        in Just (head objList)
-             | otherwise                                              = Nothing
+findObj :: ObjectID -> [Object] -> Object
+findObj o ds = head (filter (\x -> (obj_name x) == o) ds)
 
 {- Use 'findObj' to find an object in a room description -}
--- returning Maybe Object as there might not be such object 04/02/2022 08:25
 
-objectData :: ObjectID -> Room -> Maybe Object
+objectData :: ObjectID -> Room -> Object
 objectData o rm = findObj o (objects rm)
 
 {- Given a game state and a room id, replace the old room information with
    new data. If the room id does not already exist, add it. -}
--- returning Maybe Object as there might not be such object 04/02/2022 08:25
 
 updateRoom :: GameData -> RoomID -> Room -> GameData
 updateRoom gd rmid rmdata = let newWorld = filter (\x -> fst x /= rmid) (world gd)
