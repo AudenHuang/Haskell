@@ -70,8 +70,7 @@ executable adventure
   main-is: Adventure.hs
   other-modules:
 
-  hs-source-dirs:
-
+  hs-source-dirs:      game
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       Adventure,base >=4.11 && <4.12
