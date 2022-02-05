@@ -22,7 +22,7 @@ process state input = case runParser input of
 repl :: GameData -> IO GameData
 repl state | finished state = return state
 repl state = do print state
-                putStr "What now? "
+                putStr "\nWhat now?\n\n"
                 hFlush stdout
                 cmd <- getLine
                 if cmd == "save" then do save state
@@ -38,6 +38,8 @@ repl state = do print state
 save :: GameData -> IO GameData
 save gd = do writeFile "save_data.txt" (show (location_id gd) ++ "\n" ++ show (inventory gd) ++ "\n" ++ show (poured gd) ++ "\n" ++ show (caffeinated gd))
              return gd
+
+
 
 
 main :: IO ()

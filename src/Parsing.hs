@@ -176,7 +176,7 @@ parseDirection                =  do symbol "north"
 Object parsers
 -------------
 -}
-parseObject                  :: Parser ObjectID 
+parseObject                  :: Parser ObjectType 
 parseObject                 =  do symbol "mug"
                                   return Mug
                            ||| do symbol "coffee"
@@ -226,9 +226,9 @@ parseWear :: Parser Command
 parseWear = do symbol "wear"
                Wear <$> parseObject
                
-parseUse :: Parser Command
-parseUse = do symbol "use"
-              Use <$> parseObject
+-- parseUse :: Parser Command
+-- parseUse = do symbol "use"
+--               Use <$> parseObject
               
 parsePress :: Parser Command 
 parsePress = do symbol "press"
@@ -251,7 +251,7 @@ parseCommand = do parseGo
               ||| parseDrink
               ||| parseOpen
               ||| parseWear
-              ||| parseUse
+              -- ||| parseUse
               ||| parsePress
               ||| parseInventory
               ||| parseQuit
