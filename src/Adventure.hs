@@ -1,12 +1,12 @@
 module Main where
 
 import World
-import Actions
-import Parsing
+import Actions ( actions )
+import Parsing ( runParser )
 
-import Control.Monad
-import System.IO
-import System.Exit
+import Control.Monad 
+import System.IO ( hFlush, stdout )
+import System.Exit 
 
 winmessage = "Congratulations, you have made it out of the house.\n" ++
              "Now go to your lectures..."
@@ -21,7 +21,7 @@ process state input = case runParser input of
 
 repl :: GameData -> IO GameData
 repl state | finished state = return state
-repl state = do print state
+repl state = do startgame state
                 putStr "\nWhat now?\n\n"
                 hFlush stdout
                 cmd <- getLine
@@ -34,6 +34,13 @@ repl state = do print state
                 if (won state') then do putStrLn winmessage
                                         return state'
                                else repl state'
+
+
+
+startgame :: GameData -> IO ()
+startgame state = if lighton state then do print state    
+                                   else do putStrLn "The room is dark you can't see anything.\nYou can feel a light switch next to your hand.\nPleas press the switch to turn the lights on."
+                                          
 
 save :: GameData -> IO GameData
 save gd = do writeFile "save_data.txt" (show (location_id gd) ++ "\n" ++ show (inventory gd) ++ "\n" ++ show (poured gd) ++ "\n" ++ show (caffeinated gd))

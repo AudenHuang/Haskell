@@ -1,7 +1,8 @@
+{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
 module Actions where
 
 import World
-import Data.Maybe
+import Data.Maybe ( fromJust, isJust )
 
 actions :: Command -> Action
 actions (Go dir)      = go dir
@@ -31,7 +32,7 @@ Nothing
 
 move :: Direction -> Room -> Maybe RoomID
 move dir rm | length [ x | x <- exits rm, exit_dir x == dir ] == 1    = let theRoom = [ x | x <- exits rm, exit_dir x == dir ]
-                                                                        in  Just (room (head theRoom))     
+                                                                        in  Just (room (head theRoom))
             | otherwise                                               = Nothing
 
 {- Return True if the object appears in the room. -}
@@ -76,14 +77,14 @@ updateRoom gd rmid rmdata = let updatedWorld = filter (\x -> fst x /= rmid) (wor
    room and add it to the player's inventory -}
 
 addInv :: GameData -> ObjectType -> GameData
-addInv gd obj = GameData (location_id gd) (world gd) (inventory gd ++ [objectData obj (getRoomData gd)]) (poured gd) (caffeinated gd) (lighton gd) (maskon gd) (finished gd) 
+addInv gd obj = GameData (location_id gd) (world gd) (inventory gd ++ [objectData obj (getRoomData gd)]) (poured gd) (caffeinated gd) (lighton gd) (maskon gd) (finished gd)
 
 {- Given a game state and an object id, remove the object from the
    inventory. Hint: use filter to check if something should still be in
    the inventory. -}
 
 removeInv :: GameData -> ObjectType -> GameData
-removeInv gd obj = GameData (location_id gd) (world gd) (filter (\x -> obj_name x /= obj) (inventory gd)) (poured gd) (caffeinated gd) (lighton gd) (maskon gd) (finished gd) 
+removeInv gd obj = GameData (location_id gd) (world gd) (filter (\x -> obj_name x /= obj) (inventory gd)) (poured gd) (caffeinated gd) (lighton gd) (maskon gd) (finished gd)
 
 {- Does the inventory in the game state contain the given object? -}
 
@@ -102,7 +103,7 @@ carrying gd obj = foldr (||) False [ obj == obj_name o | o <- inventory gd ]
 -}
 
 go :: Direction -> Action
-go direction gd 
+go direction gd | not(lighton gd)                           = (gd , "\nThe light is off. You can't move until you turn the light on\n")
                 | isJust (move direction (getRoomData gd))  = (gd {location_id = fromJust (move direction (getRoomData gd))}, "\nOK\n")
                 | otherwise                                 = (gd, "You can't go this way. It's a dead end.")
 
@@ -125,8 +126,8 @@ get obj state = let currentRoom = location_id state
                         The information printed in the terminal to tell the player which room they are in 
                         eg. You are in your bedroom.
                      -}
-                    currentRoomInfo = getRoomData state 
-                    inRoom = objectHere obj currentRoomInfo  
+                    currentRoomInfo = getRoomData state
+                    inRoom = objectHere obj currentRoomInfo
                     updatedInv = addInv state obj
                     newRoom = removeObject obj currentRoomInfo
                     newState = updateRoom updatedInv currentRoom newRoom
@@ -139,14 +140,14 @@ get obj state = let currentRoom = location_id state
 -}
 
 put :: ObjectType -> Action
-put obj state | (carrying state obj) == False = (state, "This item isn't in your inventory. Are you tripping?")
-              | otherwise                     = let updatedGD = removeInv state obj
-                                                    currentRoom = location_id  updatedGD
-                                                    currentRoomInfo = getRoomData state
-                                                    object = filter (\x -> obj_name x == obj) (inventory state) !! 0
-                                                    newRoom = addObject object currentRoomInfo
-                                                    newState = updateRoom updatedGD currentRoom newRoom
-                                                    in (GameData (location_id updatedGD) (world newState) (inventory updatedGD) (poured updatedGD) (caffeinated updatedGD) (lighton updatedGD) (maskon updatedGD) (finished updatedGD), "object dropped")
+put obj state | not (carrying state obj) = (state, "This item isn't in your inventory. Are you tripping?")
+              | otherwise                = let updatedGD = removeInv state obj
+                                               currentRoom = location_id  updatedGD
+                                               currentRoomInfo = getRoomData state
+                                               object = filter (\x -> obj_name x == obj) (inventory state) !! 0
+                                               newRoom = addObject object currentRoomInfo
+                                               newState = updateRoom updatedGD currentRoom newRoom
+                                               in (GameData (location_id updatedGD) (world newState) (inventory updatedGD) (poured updatedGD) (caffeinated updatedGD) (lighton updatedGD) (maskon updatedGD) (finished updatedGD), "object dropped")
 
 {- Don't update the state, just return a message giving the full description
    of the object. As long as it's either in the room or the player's 
@@ -158,7 +159,7 @@ examine obj state = let currentRoomInfo = getRoomData state
                         isObjInRoom = objectHere obj currentRoomInfo
                         object | isObjInInv  = findObj obj (inventory state)
                                | isObjInRoom = findObj obj (objects currentRoomInfo)
-                        in if isObjInRoom || isObjInInv then (state, obj_desc object) 
+                        in if isObjInRoom || isObjInInv then (state, obj_desc object)
                            else (state, "There's no such item.")
 
 {- Pour the coffee. Obviously, this should only work if the player is carrying
@@ -167,10 +168,10 @@ examine obj state = let currentRoomInfo = getRoomData state
 -}
 
 pour :: ObjectType -> Action
-pour Coffee state | (carrying state Coffee) == False                                  = (state, "This item isn't in your inventory. Are you tripping?")
+pour Coffee state | not (carrying state Coffee)                                       = (state, "You are not arrying a coffee pot. Are you tripping?")
                   | fullmug `elem` inventory state                                    = (state, "The mug is already full")
                   | carrying state Mug  && carrying state Coffee                      = (state{inventory = filter (/= mug) (inventory state) ++ [fullmug], poured = True}, "Coffee poured!")
-                  | mug `elem` inventory state && coffeepot `notElem` inventory state = (state, "You need a coffee pot") 
+                  | mug `elem` inventory state && coffeepot `notElem` inventory state = (state, "You need a coffee pot")
                   | mug `notElem` inventory state && coffeepot `elem` inventory state = (state, "You need a mug")
 pour _      state                                                                     = (state, "What are you trying to pour???? Are you sure you are not high?")
 
@@ -183,7 +184,7 @@ pour _      state                                                               
 -}
 
 drink :: ObjectType -> Action
-drink Coffee state | (carrying state Coffee) == False && mug `elem` inventory state = (state, "Your mug is empty, and you don't even have a coffee pot. What are you trying to drink")
+drink Coffee state | not (carrying state Coffee) && mug `elem` inventory state = (state, "Your mug is empty, and you don't even have a coffee pot. What are you trying to drink")
                    | carrying state Coffee && mug `elem` inventory state            = (state, "Your mug is empty. Pour some coffee into your mug first")
                    | fullmug `elem` inventory state && caffeinated state            = (state, "You've drank a cup of coffee already. You shouldn't drink more")
                    | fullmug `elem` inventory state                                 = (state {inventory = filter (/= fullmug) (inventory state) ++ [mug], caffeinated = True}, "Coffee drank")
@@ -207,17 +208,17 @@ open Door state | caffeinated state && maskon state && key `elem` inventory stat
 open _    state                                                                                                = (state, "You can't open this")
 
 
-wear :: ObjectType -> Action 
+wear :: ObjectType -> Action
 wear Mask state | carrying state Mask = (state{maskon = True}, "Mask on, you can leave your house now")
                 | otherwise           = (state, "You don't have a mask on you. Are you tripping?")
 wear _    state                       = (state, "This item isn't wearable")
 
-press :: ObjectType -> Action 
+press :: ObjectType -> Action
 press Switch state | lighton state && location_id state == Bedroom  = (state{lighton = False}, "You've switched the lights off")
                    | location_id state == Bedroom                   = (state{lighton = True}, "lights on, now you can explore the house")
                    | otherwise                                      = (state, "There's no light switch in this room")
-press _ state                                                       = (state, "You can't press this") 
-               
+press _ state                                                       = (state, "You can't press this")
+
 
 
 {- Don't update the game state, just list what the player is carrying -}

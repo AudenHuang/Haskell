@@ -1,5 +1,6 @@
+{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
 module World where
-import Data.Maybe
+import Data.Maybe ( fromJust )
 
 
 instance Show Object where
@@ -65,7 +66,6 @@ data Command = Go Direction
              | Drink ObjectType
              | Open ObjectType
              | Wear ObjectType
-            --  | Use ObjectType
              | Press ObjectType
              | Inventory
              | Quit
@@ -87,7 +87,7 @@ switch    = Obj Switch "a switch for the light" "A switch for the light"
 
 bedroom, kitchen, hall, street, livingroom :: Room
 
-bedroom = Room "You are in your bedroom."
+bedroom = Room "You are in your bedroom.There's a light switch on the wall"
                [Exit North "To the north is a kitchen. " Kitchen]
                [mug]
 
