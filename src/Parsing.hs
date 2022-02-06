@@ -4,6 +4,7 @@ Graham Hutton, Cambridge University Press, 2007.
 
 Minor changes by Edwin Brady
 -}
+{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
 
 module Parsing where
 
@@ -225,10 +226,6 @@ parseOpen = do symbol "open"
 parseWear :: Parser Command  
 parseWear = do symbol "wear"
                Wear <$> parseObject
-               
--- parseUse :: Parser Command
--- parseUse = do symbol "use"
---               Use <$> parseObject
               
 parsePress :: Parser Command 
 parsePress = do symbol "press"
@@ -251,7 +248,6 @@ parseCommand = do parseGo
               ||| parseDrink
               ||| parseOpen
               ||| parseWear
-              -- ||| parseUse
               ||| parsePress
               ||| parseInventory
               ||| parseQuit
