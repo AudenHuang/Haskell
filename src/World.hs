@@ -101,7 +101,7 @@ hall = Room "You are in the hallway. The front door is closed. "
              Exit North "To the north is a living room." LivingRoom]
             []
 
-livingroom = Room "You are in the living room. There's a key on the table."
+livingroom = Room "You are in the living room."
             [Exit South "To the south is a hallway. " Hall]
             [key,mask]
             
