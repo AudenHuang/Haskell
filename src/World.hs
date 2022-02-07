@@ -41,6 +41,7 @@ data GameData = GameData { location_id :: RoomID, -- where player is
                            lighton :: Bool, -- the light is on
                            maskon :: Bool, -- the mask is on
                            poisoned :: Bool, -- drank poison coffee
+                           saved :: Bool,
                            finished :: Bool -- set to True at the end
                          }
 
@@ -51,7 +52,7 @@ won gd = location_id gd == Street
 data Direction = North | South | East | West | Out
     deriving (Eq, Show)
     
-data ObjectType = Mug | Coffee | Mask | Key | Switch | Door 
+data ObjectType = Mug | Cup |Coffee | Mask | Key | Switch | Door 
     deriving (Eq, Show)
 
 data RoomID = Bedroom | Kitchen | LivingRoom | DinningRoom | Hall | Street
@@ -69,23 +70,21 @@ data Command = Go Direction
              | Press ObjectType
              | Inventory
              | Quit
+             | Save
              deriving Show
              
 
 -- Things which just update the game state
 type Action = GameData -> (GameData, String)
 
-{-type GameSave = GameData -> IO()-}
-
-mug, fullmug, weirdcoffee, coffeepot, mask, key, switch, suspiciouspot :: Object
-mug            = Obj Mug "a coffee mug" "A coffee mug"
-fullmug        = Obj Mug "a full coffee mug" "A coffee mug containing freshly brewed coffee"
-weirdcoffee    = Obj Mug "a mug filled with suspicious coffee" "A mug filled with suspicious coffee"
-coffeepot      = Obj Coffee "a pot of coffee" "A pot containing freshly brewed coffee"
-suspiciouspot  = Obj Coffee "a suspicious coffee pot" "A pot of suspicious coffee. You better drop it"
-mask           = Obj Mask "a piece of mask" "A piecee of mask protect people from catching COVID"
-key            = Obj Key "a key for a door" "A myterious key"
-switch         = Obj Switch "a switch for the light" "A switch for the light"
+mug, fullmug, coffeepot, mask, key, switch, suspiciouscoffee :: Object
+mug              = Obj Mug "a coffee mug" "A coffee mug"
+fullmug          = Obj Mug "a full coffee mug" "A coffee mug containing freshly brewed coffee"
+suspiciouscoffee = Obj Cup "a cup filled with suspicious coffee" "A cup filled with suspicious coffee. You better drop it"
+coffeepot        = Obj Coffee "a pot of coffee" "A pot containing freshly brewed coffee"
+mask             = Obj Mask "a piece of mask" "A piecee of mask protect people from catching COVID"
+key              = Obj Key "a key for a door" "A myterious key"
+switch           = Obj Switch "a switch for the light" "A switch for the light"
 
 
 bedroom, kitchen, hall, street, livingroom, dinningroom :: Room
@@ -98,7 +97,7 @@ kitchen = Room "You are in the kitchen."
                [Exit South "To the south is your bedroom. " Bedroom,
                 Exit West "To the west is a hallway. " Hall,
                 Exit North "To the north is a dinning room" DinningRoom]
-               [suspiciouspot]
+               [suspiciouscoffee]
 
 hall = Room "You are in the hallway. The front door is closed. "
             [Exit East "To the east is a kitchen. " Kitchen,
@@ -107,7 +106,7 @@ hall = Room "You are in the hallway. The front door is closed. "
 
 livingroom = Room "You are in the living room."
             [Exit South "To the south is a hallway. " Hall,
-             Exit East "To the east is a living room. " LivingRoom]
+             Exit East "To the east is a dinning room. " DinningRoom]
             [key,mask]
 
 dinningroom = Room "You are in the dinning room."
@@ -128,9 +127,12 @@ gameworld = [(Bedroom, bedroom),
              (Street, street)]
 
 initState :: GameData
-initState = GameData Bedroom gameworld [] False False False False False
+initState = GameData Bedroom gameworld [] False False False False False False
 
 {- Return the room the player is currently in. -}
 
 getRoomData :: GameData -> Room
 getRoomData gd = fromJust (lookup (location_id gd) (world gd))
+
+getIndivRoom :: GameData -> RoomID -> Room
+getIndivRoom gd rid = fromJust (lookup rid (world gd)) 

@@ -237,6 +237,10 @@ parseQuit :: Parser Command
 parseQuit = do symbol "quit"
                return Quit 
 
+parseSave :: Parser Command 
+parseSave = do symbol "save"
+               return Save 
+
 parseCommand :: Parser Command 
 parseCommand = do parseGo 
               ||| parseGet
@@ -249,6 +253,37 @@ parseCommand = do parseGo
               ||| parsePress
               ||| parseInventory
               ||| parseQuit
+              ||| parseSave
+parseRoom :: [Char] -> RoomID
+parseRoom str |str == "Bedroom" = Bedroom
+              |str == "Kitchen" = Kitchen
+              |str == "Hall" = Hall
+              |str == "LivingRoom" = LivingRoom
+              |str == "DinningRoom" = DinningRoom
+
+remBrack (x:xs) = init xs
+remBrack [] = ""
+
+wordsWhen :: (Char -> Bool) -> String -> [String]
+wordsWhen pred str = case dropWhile pred str of
+                           "" -> []
+                           str' -> w : wordsWhen pred str''
+                                   where (w, str'') = break pred str'
+
+splitInv str = wordsWhen (==',') (remBrack str)
+
+parseInv :: [[Char]] -> [Object]
+parseInv (x:xs) |x == "a coffee mug" = mug:parseInv xs
+                |x == "a full coffee mug" = fullmug:parseInv xs
+                |x == "a pot of coffee" = coffeepot:parseInv xs
+                |x == "a piece of mask" = mask:parseInv xs
+                |x == "a key for a door" = key:parseInv xs
+                |x == "a cup filled with suspicious coffee" = suspiciouscoffee:parseInv xs
+                |x == "a switch for the light" = switch:parseInv xs
+parseInv [] = []
+
+parseBool :: [Char] -> Bool
+parseBool str = str == "True"
 
 runParser :: String -> Maybe Command 
 runParser xs = case parse parseCommand xs of
