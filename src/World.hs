@@ -75,6 +75,8 @@ data Command = Go Direction
 -- Things which just update the game state
 type Action = GameData -> (GameData, String)
 
+{-type GameSave = GameData -> IO()-}
+
 mug, fullmug, weirdcoffee, coffeepot, mask, key, switch, suspiciouspot :: Object
 mug            = Obj Mug "a coffee mug" "A coffee mug"
 fullmug        = Obj Mug "a full coffee mug" "A coffee mug containing freshly brewed coffee"
@@ -132,6 +134,3 @@ initState = GameData Bedroom gameworld [] False False False False False
 
 getRoomData :: GameData -> Room
 getRoomData gd = fromJust (lookup (location_id gd) (world gd))
-
-getIndivRoom :: GameData -> RoomID -> Room
-getIndivRoom gd rid = fromJust (lookup rid (world gd)) 
