@@ -55,12 +55,35 @@ startgame state = if lighton state
 
 save :: GameData -> IO GameData
 save gd = do writeFile "save_data.txt" (show (location_id gd) ++ "\n" ++ show (inventory gd) ++ "\n" 
-               ++ show (caffeinated gd) ++ "\n" ++ show (objects (getIndivRoom gd Bedroom)) ++ "\n" ++
-                show (objects (getIndivRoom gd Kitchen)) ++ "\n" ++ show (objects (getIndivRoom gd Hall)) ++ "\n" ++ 
-                show (objects (getIndivRoom gd LivingRoom))++ "\n" ++ show (objects (getIndivRoom gd DinningRoom)))
+               ++ show (caffeinated gd) ++ "\n" ++ show (lighton gd)++ "\n" ++ show (maskon gd)++ "\n" ++
+                show (objects (getIndivRoom gd Bedroom)) ++ "\n" ++ show (objects (getIndivRoom gd Kitchen)) ++ "\n" ++ 
+                show (objects (getIndivRoom gd Hall)) ++ "\n" ++ show (objects (getIndivRoom gd LivingRoom))++ "\n" ++ 
+                show (objects (getIndivRoom gd DinningRoom)))
              return gd
 
+load = do inFile <- openFile "save_data.txt" ReadMode
+          gd <- hGetContents inFile
+          rnf gd `seq` hClose inFile
+          let saveData = lines gd
+              defState = GameData Bedroom gameworld [] False False False
+              currentRoom = parseRoom (saveData!!0)
+              currentInv = parseInv (splitInv (saveData!!1))
+              caffState = parseBool (saveData!!2)
+              lightState = parseBool (saveData!!3)
+              maskState = parseBool (saveData!!4)
+              wrld = [(Bedroom, worldState defState Bedroom (splitInv(saveData!!5))),
+                      (Kitchen, worldState defState Kitchen (splitInv(saveData!!6))),
+                      (Hall, worldState defState Hall (splitInv(saveData!!7))),
+                      (LivingRoom, worldState defState LivingRoom (splitInv(saveData!!8))),
+                      (DinningRoom, worldState defState DinningRoom (splitInv(saveData!!9)))
+                      (Street, street)]
+              initState = GameData currentRoom wrld currentInv caffState lightState maskState False False
+          do repl initState
 
+worldState :: GameData -> RoomID -> [[Char]] -> Room
+worldState gd rmid items = Room (room_desc (getIndivRoom gd rmid))
+                                (exits (getIndivRoom gd rmid))
+                                (parseInv items)
 
 
 main :: IO ()
