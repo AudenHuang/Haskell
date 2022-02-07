@@ -132,3 +132,6 @@ initState = GameData Bedroom gameworld [] False False False False False
 
 getRoomData :: GameData -> Room
 getRoomData gd = fromJust (lookup (location_id gd) (world gd))
+
+getIndivRoom :: GameData -> RoomID -> Room
+getIndivRoom gd rid = fromJust (lookup rid (world gd)) 
