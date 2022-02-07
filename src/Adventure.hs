@@ -5,6 +5,9 @@ import Actions ( actions )
 import Parsing ( runParser )
 
 import Control.Monad
+import Control.Monad.Trans
+import Data.List
+import System.Console.Haskeline
 import System.IO ( hFlush, stdout )
 import System.Exit
 import System.Directory (doesFileExist)
@@ -13,7 +16,7 @@ import Control.DeepSeq (rnf)
 
 winmessage = "Congratulations, you have made it out of the house.\n" ++
              "Now go to your lectures..."
-lossmessage = "Oh no! you die."
+lossmessage = "Oh no! you died."
 
 {- Given a game state, and user input (as a list of words) return a 
    new game state and a message for the user. -}
@@ -25,23 +28,25 @@ process state input = case runParser input of
 
 repl :: GameData -> IO GameData
 repl state | finished state = return state
-repl state = do startgame state
-                putStr "\nWhat now?\n\n"
-                hFlush stdout
-                cmd <- getLine
-                if cmd == "save" then do save state
-                                         putStrLn "Saved"
-                                         repl state
-                else if cmd == "load" then do putStrLn "Loaded Save Data"
-                                              load
-                else do
-                let (state', msg) = process state cmd
-                putStrLn msg
+
+repl state = do lift $ startgame state
+                lift $ putStr "\nWhat now?\n\n"
+                lift $ hFlush stdout
+                cmd <- getInputLine "> "
+                case cmd of
+                Nothing -> return state
+                Just "save" -> do lift $ save state
+                                  outputStrLn "Saved"
+                                  repl state
+                Just "load" -> do outputStrLn "Loading Save Data"
+                                  lift $ load
+                Just cmd -> do let (state', msg) = process state cmd
+                               outputStrLn msg
                 if won state' 
-                then do putStrLn winmessage
+                then do outputStrLn winmessage
                         return state'
                 else if poisoned state'
-                then do putStr lossmessage
+                then do outputStrLn lossmessage
                         return state'
                 else repl state'
 
@@ -60,7 +65,8 @@ save gd = do writeFile "save_data.txt" (show (location_id gd) ++ "\n" ++ show (i
                 show (objects (getIndivRoom gd Hall)) ++ "\n" ++ show (objects (getIndivRoom gd LivingRoom))++ "\n" ++ 
                 show (objects (getIndivRoom gd DinningRoom)))
              return gd
-
+             
+load :: IO GameData
 load = do inFile <- openFile "save_data.txt" ReadMode
           gd <- hGetContents inFile
           rnf gd `seq` hClose inFile
