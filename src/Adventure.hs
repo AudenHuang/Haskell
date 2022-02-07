@@ -32,6 +32,8 @@ repl state = do startgame state
                 if cmd == "save" then do save state
                                          putStrLn "Saved"
                                          repl state
+                else if cmd == "load" then do putStrLn "Loaded Save Data"
+                                              load
                 else do
                 let (state', msg) = process state cmd
                 putStrLn msg
