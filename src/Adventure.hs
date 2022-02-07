@@ -54,7 +54,10 @@ startgame state = if lighton state
 
 
 save :: GameData -> IO GameData
-save gd = do writeFile "save_data.txt" (show (location_id gd) ++ "\n" ++ show (inventory gd) ++ "\n" ++ show (caffeinated gd))
+save gd = do writeFile "save_data.txt" (show (location_id gd) ++ "\n" ++ show (inventory gd) ++ "\n" 
+               ++ show (caffeinated gd) ++ "\n" ++ show (objects (getIndivRoom gd Bedroom)) ++ "\n" ++
+                show (objects (getIndivRoom gd Kitchen)) ++ "\n" ++ show (objects (getIndivRoom gd Hall)) ++ "\n" ++ 
+                show (objects (getIndivRoom gd LivingRoom))++ "\n" ++ show (objects (getIndivRoom gd DinningRoom)))
              return gd
 
 
