@@ -16,7 +16,6 @@ actions (Press obj)   = press obj
 actions (Wear obj)    = wear obj
 actions Quit          = quit
 actions Inventory     = inv
-actions Save          = save
 
 
 
@@ -72,21 +71,21 @@ objectData o rm = findObj o (objects rm)
 updateRoom :: GameData -> RoomID -> Room -> GameData
 updateRoom gs rmid rmdata = let updatedWorld = filter (\x -> fst x /= rmid) (world gs)
                                 newRoom = Room (room_desc rmdata) (exits rmdata) (objects rmdata)
-                                in GameData (location_id gs) (updatedWorld ++ [(rmid, newRoom)]) (inventory gs) (caffeinated gs) (lighton gs) (maskon gs) (poisoned gs) (saved gs) (finished gs)
+                                in GameData (location_id gs) (updatedWorld ++ [(rmid, newRoom)]) (inventory gs) (caffeinated gs) (lighton gs) (maskon gs) (poisoned gs) (finished gs)
 
 
 {- Given a game state and an object id, find the object in the current
    room and add it to the player's inventory -}
 
 addInv :: GameData -> ObjectType -> GameData
-addInv gs obj = GameData (location_id gs) (world gs) (inventory gs ++ [objectData obj (getRoomData gs)]) (caffeinated gs) (lighton gs) (maskon gs) (poisoned gs) (saved gs) (finished gs)
+addInv gs obj = GameData (location_id gs) (world gs) (inventory gs ++ [objectData obj (getRoomData gs)]) (caffeinated gs) (lighton gs) (maskon gs) (poisoned gs) (finished gs)
 
 {- Given a game state and an object id, remove the object from the
    inventory. Hint: use filter to check if something should still be in
    the inventory. -}
 
 removeInv :: GameData -> ObjectType -> GameData
-removeInv gs obj = GameData (location_id gs) (world gs) (filter (\x -> obj_name x /= obj) (inventory gs)) (caffeinated gs) (lighton gs) (maskon gs) (poisoned gs) (saved gs) (finished gs)
+removeInv gs obj = GameData (location_id gs) (world gs) (filter (\x -> obj_name x /= obj) (inventory gs)) (caffeinated gs) (lighton gs) (maskon gs) (poisoned gs) (finished gs)
 
 {- Does the inventory in the game state contain the given object? -}
 
@@ -151,7 +150,7 @@ put obj gs | not (carrying gs obj)  = (gs, "This item isn't in your inventory. A
                                           object = filter (\x -> obj_name x == obj) (inventory gs) !! 0
                                           newRoom = addObject object currentRoomInfo
                                           newState = updateRoom updatedGD currentRoom newRoom
-                                          in (GameData (location_id updatedGD) (world newState) (inventory updatedGD) (caffeinated updatedGD) (lighton updatedGD) (maskon updatedGD) (poisoned updatedGD) (saved updatedGD) (finished updatedGD), "object dropped")
+                                          in (GameData (location_id updatedGD) (world newState) (inventory updatedGD) (caffeinated updatedGD) (lighton updatedGD) (maskon updatedGD) (poisoned updatedGD) (finished updatedGD), "object dropped")
 
 {- Don't update the state, just return a message giving the full description
    of the object. As long as it's either in the room or the player's 
@@ -188,10 +187,10 @@ pour _      gs                                     = (gs, "What are you trying t
 -}
 
 drink :: ObjectType -> Action
-drink Coffee gs | not (carrying gs Mug)                           = (gs, "You don't even have a mug")
+drink Coffee gs | suspiciouscoffee `elem` inventory gs            = (gs {poisoned = True}, "You've drank a cup of poison coffee.")
+                | not (carrying gs Mug)                           = (gs, "You don't even have a mug")
                 | mug `elem` inventory gs                         = (gs, "Your mug is empty. Pour some coffee into your mug first")
                 | fullmug `elem` inventory gs && caffeinated gs   = (gs, "You've drank a cup of coffee already. You shouldn't drink more")
-                | suspiciouscoffee `elem` inventory gs            = (gs {poisoned = True}, "You've drank a cup of poison coffee.")
                 | otherwise                                       = (gs {inventory = filter (/= fullmug) (inventory gs) ++ [mug], caffeinated = True}, "Coffee drank")
 drink _    gs                                                     = (gs, "What are you trying to drink")
 
@@ -236,5 +235,3 @@ inv gs = (gs, showInv (inventory gs))
 
 quit :: Action
 quit gs = (gs { finished = True }, "Bye bye")
-
-save gs = (gs {saved =True}, "File Saved")

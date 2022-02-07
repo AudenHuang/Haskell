@@ -41,7 +41,6 @@ data GameData = GameData { location_id :: RoomID, -- where player is
                            lighton :: Bool, -- the light is on
                            maskon :: Bool, -- the mask is on
                            poisoned :: Bool, -- drank poison coffee
-                           saved :: Bool,
                            finished :: Bool -- set to True at the end
                          }
 
@@ -70,7 +69,6 @@ data Command = Go Direction
              | Press ObjectType
              | Inventory
              | Quit
-             | Save
              deriving Show
              
 
@@ -127,7 +125,7 @@ gameworld = [(Bedroom, bedroom),
              (Street, street)]
 
 initState :: GameData
-initState = GameData Bedroom gameworld [] False False False False False False
+initState = GameData Bedroom gameworld [] False False False False False
 
 {- Return the room the player is currently in. -}
 

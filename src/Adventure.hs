@@ -36,14 +36,10 @@ repl state = do lift $ startgame state
                 case cmd of
                         Nothing -> return state
                         Just "save" -> do lift $ save state
-                                          let (state', msg) = process state "save"
-                                          outputStrLn msg
+                                          outputStrLn "Game Saved!"
                                           repl state
-                        Just "load" -> if saved state
-                                       then do outputStrLn "Loading Save Data"
-                                               load
-                                       else do outputStrLn "No Saved Data"
-                                               repl state
+                        Just "load" -> do outputStrLn "Loading Save Data..."
+                                          loadCheck state
                         Just cmd -> do let (state', msg) = process state cmd
                                        outputStrLn msg
                                        if won state' 
@@ -76,7 +72,7 @@ load = do inFile <- lift $ openFile "save_data.txt" ReadMode
           gd <- lift $ hGetContents inFile
           lift $ rnf gd `seq` hClose inFile
           let saveData = lines gd
-              defState = GameData Bedroom gameworld [] False False False False False False
+              defState = GameData Bedroom gameworld [] False False False False False
               currentRoom = parseRoom (saveData!!0)
               currentInv = parseInv (splitInv (saveData!!1))
               caffState = parseBool (saveData!!2)
@@ -88,7 +84,7 @@ load = do inFile <- lift $ openFile "save_data.txt" ReadMode
                       (LivingRoom, worldState defState LivingRoom (splitInv(saveData!!8))),
                       (DinningRoom, worldState defState DinningRoom (splitInv(saveData!!9))),
                       (Street, street)]
-              initState = GameData currentRoom wrld currentInv caffState lightState maskState False True False
+              initState = GameData currentRoom wrld currentInv caffState lightState maskState False False
           do repl initState
 
 
@@ -96,6 +92,13 @@ worldState :: GameData -> RoomID -> [[Char]] -> Room
 worldState gd rmid items = Room (room_desc (getIndivRoom gd rmid))
                                 (exits (getIndivRoom gd rmid))
                                 (parseInv items)
+
+loadCheck :: GameData -> InputT IO GameData
+loadCheck state = do ifFile <- lift $ doesFileExist "save_data.txt"
+                     if ifFile
+                     then load
+                     else do outputStrLn "No Save Data Found"
+                             repl state
 
 
 validWords :: [String]

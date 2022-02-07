@@ -188,6 +188,8 @@ parseObject                 =  do symbol "mug"
                                   return Door
                            ||| do symbol "mask"
                                   return Mask
+                           ||| do symbol "cup"
+                                  return Cup
 
 {-
 Command parsers
@@ -237,10 +239,6 @@ parseQuit :: Parser Command
 parseQuit = do symbol "quit"
                return Quit 
 
-parseSave :: Parser Command 
-parseSave = do symbol "save"
-               return Save 
-
 parseCommand :: Parser Command 
 parseCommand = do parseGo 
               ||| parseGet
@@ -253,7 +251,6 @@ parseCommand = do parseGo
               ||| parsePress
               ||| parseInventory
               ||| parseQuit
-              ||| parseSave
 parseRoom :: [Char] -> RoomID
 parseRoom str |str == "Bedroom" = Bedroom
               |str == "Kitchen" = Kitchen
