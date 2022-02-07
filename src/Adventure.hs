@@ -11,7 +11,6 @@ import System.Console.Haskeline
 import System.IO
 import System.Exit
 import System.Directory (doesFileExist)
-import Distribution.Simple.Utils (lowercase)
 import Control.DeepSeq (rnf)
 
 winmessage = "Congratulations, you have made it out of the house.\n" ++
