@@ -75,8 +75,6 @@ data Command = Go Direction
 -- Things which just update the game state
 type Action = GameData -> (GameData, String)
 
-{-type GameSave = GameData -> IO()-}
-
 mug, fullmug, weirdcoffee, coffeepot, mask, key, switch, suspiciouspot :: Object
 mug            = Obj Mug "a coffee mug" "A coffee mug"
 fullmug        = Obj Mug "a full coffee mug" "A coffee mug containing freshly brewed coffee"
