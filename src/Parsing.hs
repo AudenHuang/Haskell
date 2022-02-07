@@ -4,6 +4,7 @@ Graham Hutton, Cambridge University Press, 2007.
 
 Minor changes by Edwin Brady
 -}
+{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
 
 module Parsing where
 
@@ -167,8 +168,6 @@ parseDirection                =  do symbol "north"
                                     return East 
                              ||| do symbol "west"
                                     return West 
-                             ||| do symbol "in"
-                                    return In 
                              ||| do symbol "out"
                                     return Out 
 
@@ -176,7 +175,7 @@ parseDirection                =  do symbol "north"
 Object parsers
 -------------
 -}
-parseObject                  :: Parser ObjectID 
+parseObject                  :: Parser ObjectType 
 parseObject                 =  do symbol "mug"
                                   return Mug
                            ||| do symbol "coffee"
@@ -225,10 +224,6 @@ parseOpen = do symbol "open"
 parseWear :: Parser Command  
 parseWear = do symbol "wear"
                Wear <$> parseObject
-               
-parseUse :: Parser Command
-parseUse = do symbol "use"
-              Use <$> parseObject
               
 parsePress :: Parser Command 
 parsePress = do symbol "press"
@@ -251,7 +246,6 @@ parseCommand = do parseGo
               ||| parseDrink
               ||| parseOpen
               ||| parseWear
-              ||| parseUse
               ||| parsePress
               ||| parseInventory
               ||| parseQuit
@@ -260,33 +254,3 @@ runParser :: String -> Maybe Command
 runParser xs = case parse parseCommand xs of
                [(cmd, "")] -> Just cmd
                _ -> Nothing
-
-
-parseRoom :: [Char] -> RoomID
-parseRoom str |str == "Bedroom" = Bedroom
-              |str =="Kitchen" = Kitchen
-              |str == "Hall" = Hall
-              |str == "LivingRoom" = LivingRoom
-
-remBrack (x:xs) = init xs
-remBrack [] = ""
-
-wordsWhen :: (Char -> Bool) -> String -> [String]
-wordsWhen pred str = case dropWhile pred str of
-                           "" -> []
-                           str' -> w : wordsWhen pred str''
-                                   where (w, str'') = break pred str'
-
-splitInv str = wordsWhen (==',') (remBrack str)
-
-parseInv :: [[Char]] -> [Object]
-parseInv (x:xs) |x == "a coffee mug" = mug:parseInv xs
-                |x == "a full coffee mug" = fullmug:parseInv xs
-                |x == "a pot of coffee" = coffeepot:parseInv xs
-                |x == "a piece of mask" = mask:parseInv xs
-                |x == "a key for a door" = key:parseInv xs
-                |x == "a switch for the light" = switch:parseInv xs
-parseInv [] = []
-
-parseBool :: [Char] -> Bool
-parseBool str = str == "True"
