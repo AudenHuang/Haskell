@@ -7,6 +7,9 @@ import Parsing ( runParser )
 import Control.Monad
 import System.IO ( hFlush, stdout )
 import System.Exit
+import System.Directory (doesFileExist)
+import Distribution.Simple.Utils (lowercase)
+import Control.DeepSeq (rnf)
 
 winmessage = "Congratulations, you have made it out of the house.\n" ++
              "Now go to your lectures..."
