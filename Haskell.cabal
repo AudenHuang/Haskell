@@ -48,7 +48,11 @@ cabal-version:       >=1.10
 
 library
   -- Modules exported by the library.
-  -- exposed-modules:
+  exposed-modules: 
+  --Main,
+                   World,
+                   Actions,
+                   Parsing 
 
   -- Modules included in this library but not exported.
   -- other-modules:
@@ -57,7 +61,8 @@ library
   -- other-extensions:
 
   -- Other library packages from which modules are imported.
-  build-depends:       base >=4.11 && <4.12
+  build-depends:       base >=4.11 
+  --base >=4.11 && <4.12
 
   -- Directories containing source files.
   hs-source-dirs:      src
@@ -68,16 +73,22 @@ library
 
 executable adventure
   main-is: Adventure.hs
-  other-modules:
+  other-modules: 
+  --Main,
+                 World,
+                 Actions,
+                 Parsing 
 
   hs-source-dirs:      src
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      Adventure,base >=4.11 && <4.12
+      --Adventure,base >=4.11 && <4.12
+      base >=4.11,
+      mtl,
+      haskeline
 
   -- Directories containing source files.
   hs-source-dirs:      src
 
   -- Base language which the package is written in.
   default-language:    Haskell2010
-
