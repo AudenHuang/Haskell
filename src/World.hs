@@ -37,10 +37,10 @@ data Room = Room { room_desc :: String,
 data GameData = GameData { location_id :: RoomID, -- where player is
                            world :: [(RoomID, Room)],
                            inventory :: [Object], -- objects player has
-                           poured :: Bool, -- coffee is poured
                            caffeinated :: Bool, -- coffee is drunk
                            lighton :: Bool, -- the light is on
                            maskon :: Bool, -- the mask is on
+                           poisoned :: Bool, -- drank poison coffee
                            finished :: Bool -- set to True at the end
                          }
 
@@ -48,13 +48,13 @@ data GameData = GameData { location_id :: RoomID, -- where player is
 won :: GameData -> Bool
 won gd = location_id gd == Street
 
-data Direction = North | South | East | West | In | Out
+data Direction = North | South | East | West | Out
     deriving (Eq, Show)
     
 data ObjectType = Mug | Coffee | Mask | Key | Switch | Door 
     deriving (Eq, Show)
 
-data RoomID = Bedroom | Kitchen | LivingRoom | Hall | Street
+data RoomID = Bedroom | Kitchen | LivingRoom | DinningRoom | Hall | Street
     deriving (Eq, Show)
 
 -- Things which do something to an object and update the game state
@@ -77,15 +77,18 @@ type Action = GameData -> (GameData, String)
 
 {-type GameSave = GameData -> IO()-}
 
-mug, fullmug, coffeepot, mask, key, switch :: Object
-mug       = Obj Mug "a coffee mug" "A coffee mug"
-fullmug   = Obj Mug "a full coffee mug" "A coffee mug containing freshly brewed coffee"
-coffeepot = Obj Coffee "a pot of coffee" "A pot containing freshly brewed coffee"
-mask      = Obj Mask "a piece of mask" "A piecee of mask protect people from catching COVID"
-key       = Obj Key "a key for a door" "A myterious key"
-switch    = Obj Switch "a switch for the light" "A switch for the light"
+mug, fullmug, weirdcoffee, coffeepot, mask, key, switch, suspiciouspot :: Object
+mug            = Obj Mug "a coffee mug" "A coffee mug"
+fullmug        = Obj Mug "a full coffee mug" "A coffee mug containing freshly brewed coffee"
+weirdcoffee    = Obj Mug "a mug filled with suspicious coffee" "A mug filled with suspicious coffee"
+coffeepot      = Obj Coffee "a pot of coffee" "A pot containing freshly brewed coffee"
+suspiciouspot  = Obj Coffee "a suspicious coffee pot" "A pot of suspicious coffee. You better drop it"
+mask           = Obj Mask "a piece of mask" "A piecee of mask protect people from catching COVID"
+key            = Obj Key "a key for a door" "A myterious key"
+switch         = Obj Switch "a switch for the light" "A switch for the light"
 
-bedroom, kitchen, hall, street, livingroom :: Room
+
+bedroom, kitchen, hall, street, livingroom, dinningroom :: Room
 
 bedroom = Room "You are in your bedroom.There's a light switch on the wall"
                [Exit North "To the north is a kitchen. " Kitchen]
@@ -93,8 +96,9 @@ bedroom = Room "You are in your bedroom.There's a light switch on the wall"
 
 kitchen = Room "You are in the kitchen."
                [Exit South "To the south is your bedroom. " Bedroom,
-                Exit West "To the west is a hallway. " Hall]
-               [coffeepot]
+                Exit West "To the west is a hallway. " Hall,
+                Exit North "To the north is a dinning room" DinningRoom]
+               [suspiciouspot]
 
 hall = Room "You are in the hallway. The front door is closed. "
             [Exit East "To the east is a kitchen. " Kitchen,
@@ -102,23 +106,25 @@ hall = Room "You are in the hallway. The front door is closed. "
             []
 
 livingroom = Room "You are in the living room."
-            [Exit South "To the south is a hallway. " Hall]
+            [Exit South "To the south is a hallway. " Hall,
+             Exit East "To the east is a living room. " LivingRoom]
             [key,mask]
-            
--- New data about the hall for when we open the door
 
-openedhall = "You are in the hallway. The front door is open. "
-openedexits = [Exit East "To the east is a kitchen. " Kitchen,
-               Exit Out "You can go outside. " Street]
+dinningroom = Room "You are in the dinning room."
+            [Exit South "To the south is a kitchen. " Kitchen,
+             Exit West "To the west is a living room" LivingRoom]
+            [coffeepot, mug]  
 
 street = Room "You have made it out of the house."
-              [Exit In "You can go back inside if you like. " Hall]
+              []
               []
 
+gameworld :: [(RoomID, Room)]
 gameworld = [(Bedroom, bedroom),
              (Kitchen, kitchen),
              (Hall, hall),
              (LivingRoom, livingroom),
+             (DinningRoom, dinningroom),
              (Street, street)]
 
 initState :: GameData

@@ -168,8 +168,6 @@ parseDirection                =  do symbol "north"
                                     return East 
                              ||| do symbol "west"
                                     return West 
-                             ||| do symbol "in"
-                                    return In 
                              ||| do symbol "out"
                                     return Out 
 

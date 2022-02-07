@@ -10,6 +10,7 @@ import System.Exit
 
 winmessage = "Congratulations, you have made it out of the house.\n" ++
              "Now go to your lectures..."
+lossmessage = "Oh no! you die."
 
 {- Given a game state, and user input (as a list of words) return a 
    new game state and a message for the user. -}
@@ -31,9 +32,13 @@ repl state = do startgame state
                 else do
                 let (state', msg) = process state cmd
                 putStrLn msg
-                if won state' then do putStrLn winmessage
-                                      return state'
-                               else repl state'
+                if won state' 
+                then do putStrLn winmessage
+                        return state'
+                else if poisoned state'
+                then do putStr lossmessage
+                        return state'
+                else repl state'
 
 
 
@@ -44,7 +49,7 @@ startgame state = if lighton state
 
 
 save :: GameData -> IO GameData
-save gd = do writeFile "save_data.txt" (show (location_id gd) ++ "\n" ++ show (inventory gd) ++ "\n" ++ show (poured gd) ++ "\n" ++ show (caffeinated gd))
+save gd = do writeFile "save_data.txt" (show (location_id gd) ++ "\n" ++ show (inventory gd) ++ "\n" ++ "\n" ++ show (caffeinated gd))
              return gd
 
 
