@@ -5,6 +5,9 @@ import Actions ( actions )
 import Parsing ( runParser )
 
 import Control.Monad
+import Control.Monad.Trans
+import Data.List
+import System.Console.Haskeline
 import System.IO ( hFlush, stdout )
 import System.Exit
 import System.Directory (doesFileExist)
