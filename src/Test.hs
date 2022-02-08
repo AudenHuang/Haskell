@@ -107,7 +107,7 @@ prop_carrying gs objtype = carrying gs objtype == (findObj objtype (inventory gs
        -- !!!
 prop_addInv :: GameData -> ObjectType -> RoomID -> Bool
 prop_addInv gs objtype rmid | objectHere objtype (getRoomData gs {location_id = rmid})       = carrying (addInv gs {location_id = rmid} objtype) objtype
-                          | otherwise                     = True
+                            | otherwise                                                      = True
 
 -- Check if the player is NOT carrying the object that is just removed from the inventory
 prop_removeInv :: GameData -> ObjectType -> Bool
