@@ -92,7 +92,7 @@ prop_addObject obj rm = objectHere (obj_name obj) (addObject obj rm)
 -- Checking if the object is from the object list
        -- !!!
 prop_findObj :: ObjectType  -> [Object] -> Bool
-prop_findObj objtype ds = findObj objtype ds `elem` ds
+prop_findObj objtype ds = findObj objtype ( ds++ [objtype]) `elem` ds
 
 -- Check if the room is updated using the world data
 prop_updateRoom :: GameData -> RoomID -> Room -> Bool
