@@ -129,6 +129,20 @@ prop_get obj gs | not(lighton gs)                         = snd (get obj gs) == 
                 | objectHere obj (getRoomData gs)         = snd (get obj gs) == "\nYou've picked up the item\n"
                 | otherwise                               = snd (get obj gs) == "There's no such item."
 
+prop_open :: ObjectType -> GameData -> Bool
+prop_open objtype gs | objtype /= Door            = snd(open objtype gs) == "You can't open this"
+                     | location_id gs /= Hall     = snd(open objtype gs) == "There is no door here"
+                     | key `notElem` inventory gs = snd(open objtype gs) == "You don't have the key"
+                     | not(caffeinated gs)        = snd(open objtype gs) == "You haven't drunk your coffee"
+                     | not(maskon gs)             = snd(open objtype gs) == "You haven't put your mask on"
+                     | otherwise                  = snd(open objtype gs) == "You've unlocked the door with the key"
+                     
+prop_switch :: ObjectType -> GameData -> Bool
+prop_switch objtype gs | objtype /= Switch                         = snd(switch objtype gs) == "You can't press this"
+                       | lighton gs && location_id gs == Bedroom   = snd(switch objtype gs) == "You've switched the lights off")
+                       | location_id gs == Bedroom                 = snd(switch objtype gs) == "lights on, now you can explore the house")
+                       | otherwise                                 = snd(switch objtype gs) == "There's no light switch in this room")
+
 return []
 runTests = $quickCheckAll
 
