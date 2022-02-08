@@ -251,6 +251,8 @@ parseCommand = do parseGo
               ||| parsePress
               ||| parseInventory
               ||| parseQuit
+              
+{-Given an imputted string from the save file, the appropriate RoomID is returned-}
 parseRoom :: [Char] -> RoomID
 parseRoom str |str == "Bedroom" = Bedroom
               |str == "Kitchen" = Kitchen
@@ -258,17 +260,21 @@ parseRoom str |str == "Bedroom" = Bedroom
               |str == "LivingRoom" = LivingRoom
               |str == "DinningRoom" = DinningRoom
 
+{-Given the inputted list representation from the save file, a list is generated removing the '[' and ']' characters-}
 remBrack (x:xs) = init xs
 remBrack [] = ""
 
+{-Splits a string on a given char predicate, from https://stackoverflow.com/questions/4978578/how-to-split-a-string-in-haskell-}
 wordsWhen :: (Char -> Bool) -> String -> [String]
 wordsWhen pred str = case dropWhile pred str of
                            "" -> []
                            str' -> w : wordsWhen pred str''
                                    where (w, str'') = break pred str'
 
+{-calls wordsWhen on the comma character to split the list representation into an actual list-}
 splitInv str = wordsWhen (==',') (remBrack str)
 
+{-Given save data for inventory objects, the appropriate object is returned-}
 parseInv :: [[Char]] -> [Object]
 parseInv (x:xs) |x == "a coffee mug" = mug:parseInv xs
                 |x == "a full coffee mug" = fullmug:parseInv xs
@@ -279,6 +285,7 @@ parseInv (x:xs) |x == "a coffee mug" = mug:parseInv xs
                 |x == "a switch for the light" = switch:parseInv xs
 parseInv [] = []
 
+{-Parses booleans from a string (for parsing save data)-}
 parseBool :: [Char] -> Bool
 parseBool str = str == "True"
 
