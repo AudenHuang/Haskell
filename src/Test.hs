@@ -192,7 +192,7 @@ prop_inv1 :: GameData -> Object  -> Bool
 prop_inv1 gs obj = snd (inv gs') == "You are carrying:\n" ++ obj_longname obj
        where gs' = gs{inventory = inventory gs ++ [obj]}
 
-{-Test that if the object is in the inventory, the function inv will return a string telling the player that they are carryiong the object-}
+{-Test that if there's nothing in the inventory, the function inv should return "You aren't carrying anything"-}
 prop_inv2 :: GameData -> Bool
 prop_inv2 gs = snd (inv gs) == "You aren't carrying anything"
 
