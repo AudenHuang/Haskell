@@ -57,7 +57,6 @@ data ObjectType = Mug | Cup |Coffee | Mask | Key | Switch | Door
 data RoomID = Bedroom | Kitchen | LivingRoom | DinningRoom | Hall | Street
     deriving (Eq, Show)
 
--- Things which do something to an object and update the game state
 data Command = Go Direction
              | Get ObjectType
              | Put ObjectType
