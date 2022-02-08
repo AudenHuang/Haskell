@@ -70,7 +70,7 @@ instance Arbitrary Command where
                            (1, return Quit)]
 
 instance Arbitrary GameData where
-    arbitrary = return initState 
+    arbitrary = return initState
 
 -- Checking if RoomID type is returned when calling the move funciton. It also checks if "Nothing" is returned
 prop_move :: GameData -> Direction -> Room -> Bool
@@ -107,15 +107,15 @@ prop_carrying gs objtype = carrying gs objtype == (findObj objtype (inventory gs
        -- !!!
 prop_addInv :: GameData -> ObjectType -> RoomID -> Bool
 prop_addInv gs objtype rmid | objectHere objtype (getRoomData gs {location_id = rmid})       = carrying (addInv gs {location_id = rmid} objtype) objtype
-                            | otherwise                                                      = True
+                            | otherwise                     = True
 
 -- Check if the player is NOT carrying the object that is just removed from the inventory
 prop_removeInv :: GameData -> ObjectType -> Bool
 prop_removeInv gs objtype = carrying (removeInv gs objtype) objtype == False
 
 -- Check three conditions. 1. Is the light turned on? If not, the game will ask player to turn it on.
---                         2. If the move returns a Just, return ok
---                         3. Otherwise, tell the player that it is a dead end
+--                         2. If the move returns a Just, return ok.
+--                         3. Otherwise, tell the player that it is a dead end.
 prop_go :: Direction -> GameData -> Bool
 prop_go dir gs | not(lighton gs)                          = snd (go dir gs)  == "\nThe light is off. You can't move until you turn the light on\n"
                | isJust (move dir (getRoomData gs))       = snd (go dir gs)  == "\nOK\n"
@@ -125,9 +125,37 @@ prop_go dir gs | not(lighton gs)                          = snd (go dir gs)  == 
 --                         2. If the light is on, check if the object is in the room. If yes, the player will pick it up.
 --                         3. Otherwise, the game will tell the user that there is no such item.
 prop_get :: ObjectType -> GameData -> Bool
-prop_get obj gs | not(lighton gs)                         = snd (get obj gs) == "\nThe light is off. You can't see what's in the room until you turn the lights on\n"
-                | objectHere obj (getRoomData gs)         = snd (get obj gs) == "\nYou've picked up the item\n"
-                | otherwise                               = snd (get obj gs) == "There's no such item."
+prop_get objtype gs | not(lighton gs)                             = snd (get objtype gs) == "\nThe light is off. You can't see what's in the room until you turn the lights on\n"
+                    | objectHere objtype (getRoomData gs)         = snd (get objtype gs) == "\nYou've picked up the item\n"
+                    | otherwise                                   = snd (get objtype gs) == "There's no such item."
+
+-- Check if the player is carrying the object (i.e. present in the inventory). If yes, the object will be dropped.
+-- Otherwise, the game will tell the user that the item is NOT in the player's inventory. 
+prop_put :: ObjectType -> GameData -> Bool
+prop_put objtype gs | not (carrying gs objtype)           = snd (put objtype gs) == "This item isn't in your inventory. Are you tripping?"
+                    | otherwise                           = snd (put objtype gs) == "object dropped"
+
+prop_examine :: ObjectType  -> GameData -> Bool
+-- prop_examine objtype gs | carrying gs objtype || objectHere objtype (getRoomData gs) = snd (examine objtype gs) == obj_desc objtype
+prop_examine objtype gs | carrying gs objtype || objectHere objtype (getRoomData gs) = snd (examine objtype gs) == obj_desc obj
+                        | otherwise                                                  = snd (examine objtype gs) == "There's no such item."
+       where obj | carrying gs objtype = findObj objtype (inventory gs)
+                 | objectHere objtype (getRoomData gs) = findObj objtype (objects (getRoomData gs))
+
+prop_pour :: ObjectType -> GameData -> Bool
+prop_pour objtype gs | objtype /= Coffee                 = snd (pour objtype gs) == "What are you trying to pour???? Are you sure you are not high?"
+                     | not (carrying gs Coffee)          = snd (pour objtype gs) == "You are not carrying a coffee pot. Are you tripping?"
+                     | fullmug `elem` inventory gs       = snd (pour objtype gs) == "The mug is already full"
+                     | mug `notElem` inventory gs        = snd (pour objtype gs) == "You need a mug"
+                     | otherwise                         = snd (pour objtype gs) == "Coffee poured!"
+
+prop_drink :: ObjectType -> GameData -> Bool
+prop_drink objtype gs | objtype /= Coffee                       = snd (drink objtype gs) == "What are you trying to drink"
+                      | suspiciouscoffee `elem` inventory gs    = snd (drink objtype gs) == "You've drank a cup of poison coffee."
+                | not (carrying gs Mug)                         = snd (drink objtype gs) == "You don't even have a mug"
+                | mug `elem` inventory gs                       = snd (drink objtype gs) == "Your mug is empty you mug. Pour some coffee into your mug first"
+                | fullmug `elem` inventory gs && caffeinated gs = snd (drink objtype gs) == "You've drank a cup of coffee already. You shouldn't drink more"
+                | otherwise                                     = snd (drink objtype gs) == "Coffee drank"
 
 prop_open :: ObjectType -> GameData -> Bool
 prop_open objtype gs | objtype /= Door            = snd(open objtype gs) == "You can't open this"
@@ -136,12 +164,28 @@ prop_open objtype gs | objtype /= Door            = snd(open objtype gs) == "You
                      | not(caffeinated gs)        = snd(open objtype gs) == "You haven't drunk your coffee"
                      | not(maskon gs)             = snd(open objtype gs) == "You haven't put your mask on"
                      | otherwise                  = snd(open objtype gs) == "You've unlocked the door with the key"
-                     
-prop_switch :: ObjectType -> GameData -> Bool
-prop_switch objtype gs | objtype /= Switch                         = snd(switch objtype gs) == "You can't press this"
-                       | lighton gs && location_id gs == Bedroom   = snd(switch objtype gs) == "You've switched the lights off")
-                       | location_id gs == Bedroom                 = snd(switch objtype gs) == "lights on, now you can explore the house")
-                       | otherwise                                 = snd(switch objtype gs) == "There's no light switch in this room")
+
+prop_wear :: ObjectType -> GameData -> Bool
+prop_wear objtype gs | objtype /= Mask                          = snd (wear objtype gs) == "This item isn't wearable"
+                     | carrying gs Mask                         = snd (wear objtype gs) == "Mask on"
+                     | otherwise                                = snd (wear objtype gs) == "You don't have a mask on you. Are you tripping?"
+
+
+prop_press :: ObjectType -> GameData -> Bool
+prop_press objtype gs | objtype /= Switch                          = snd(press objtype gs) == "You can't press this"
+                       | lighton gs && location_id gs == Bedroom   = snd(press objtype gs) == "You've switched the lights off"
+                       | location_id gs == Bedroom                 = snd(press objtype gs) == "lights on, now you can explore the house"
+                       | otherwise                                 = snd(press objtype gs) == "There's no light switch in this room"
+
+prop_inv1 :: GameData -> Object  -> Bool 
+prop_inv1 gs obj = snd (inv gs') == "You are carrying:\n" ++ obj_longname obj
+       where gs' = gs{inventory = inventory gs ++ [obj]}
+
+prop_inv2 :: GameData -> Bool
+prop_inv2 gs = snd (inv gs) == "You aren't carrying anything"
+
+prop_quit :: GameData -> Bool 
+prop_quit gs = snd (quit gs) == "Bye bye"
 
 return []
 runTests = $quickCheckAll
