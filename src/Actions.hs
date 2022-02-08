@@ -207,7 +207,7 @@ open Door gs | location_id gs /= Hall     = (gs, "There is no door here")
              | key `notElem` inventory gs = (gs, "You don't have the key")
              | not(caffeinated gs)        = (gs, "You haven't drunk your coffee")
              | not(maskon gs)             = (gs, "You haven't put your mask on")
-             | otherwise                  = (gs, "You've opened the door with the key")
+             | otherwise                  = (updateRoom gs Hall hall { room_desc = "Get out the house now!!", exits = openedexits}, "You've opened the door with the key")
 open _    gs                              = (gs, "You can't open this")
 
 
