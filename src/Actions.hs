@@ -189,7 +189,7 @@ pour _      gs                                     = (gs, "What are you trying t
 drink :: ObjectType -> Action
 drink Coffee gs | suspiciouscoffee `elem` inventory gs            = (gs {poisoned = True}, "You've drank a cup of poison coffee.")
                 | not (carrying gs Mug)                           = (gs, "You don't even have a mug")
-                | mug `elem` inventory gs                         = (gs, "Your mug is empty. Pour some coffee into your mug first")
+                | mug `elem` inventory gs                         = (gs, "Your mug is empty you mug. Pour some coffee into your mug first")
                 | fullmug `elem` inventory gs && caffeinated gs   = (gs, "You've drank a cup of coffee already. You shouldn't drink more")
                 | otherwise                                       = (gs {inventory = filter (/= fullmug) (inventory gs) ++ [mug], caffeinated = True}, "Coffee drank")
 drink _    gs                                                     = (gs, "What are you trying to drink")
@@ -205,7 +205,7 @@ drink _    gs                                                     = (gs, "What a
 open :: ObjectType -> Action
 open Door gs | location_id gs /= Hall     = (gs, "There is no door here")
              | key `notElem` inventory gs = (gs, "You don't have the key")
-             | not(caffeinated gs)        = (gs, "You haven't drink your coffee")
+             | not(caffeinated gs)        = (gs, "You haven't drunk your coffee")
              | not(maskon gs)             = (gs, "You haven't put your mask on")
              | otherwise                  = (gs, "You've opened the door with the key")
 open _    gs                              = (gs, "You can't open this")
