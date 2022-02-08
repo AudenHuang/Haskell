@@ -180,10 +180,10 @@ pour _      gs                                     = (gs, "What are you trying t
 
 
 {- Drink the coffee. This should only work if the player has a full coffee 
-   mug! Doing this is required to be allowed to open the door. Once it is
+   mug or a suspicious coffee! Doing this is required to be allowed to open the door. Once it is
    done, also update the 'caffeinated' flag in the game state.
 
-   Also, put the empty coffee mug back in the inventory!
+   Also,if the player drink from a full mug, put the empty coffee mug back in the inventory!
 -}
 
 drink :: ObjectType -> Action
@@ -194,7 +194,7 @@ drink Coffee gs | suspiciouscoffee `elem` inventory gs            = (gs {poisone
                 | otherwise                                       = (gs {inventory = filter (/= fullmug) (inventory gs) ++ [mug], caffeinated = True}, "Coffee drank")
 drink _    gs                                                     = (gs, "What are you trying to drink")
 
-{- Open the door. Only allowed if the player has had coffee! 
+{- Open the door. Only allowed if the player has had coffee and has a mask on! 
    This should change the description of the hall to say that the door is open,
    and add an exit out to the street.
 
@@ -207,15 +207,19 @@ open Door gs | location_id gs /= Hall     = (gs, "There is no door here")
              | key `notElem` inventory gs = (gs, "You don't have the key")
              | not(caffeinated gs)        = (gs, "You haven't drunk your coffee")
              | not(maskon gs)             = (gs, "You haven't put your mask on")
-             | otherwise                  = (updateRoom gs Hall hall { room_desc = "Get out the house now!!", exits = openedexits}, "You've opened the door with the key")
+             | otherwise                  = (updateRoom gs Hall hall { room_desc = openedhall, exits = openedexits}, "You've unlocked the door with the key")
 open _    gs                              = (gs, "You can't open this")
 
-
+{- Wear a mask. Only allow if player is carrying a mask. Once it is
+   done, also update the 'maskon' flag in the game state.-}
+   
 wear :: ObjectType -> Action
 wear Mask gs | carrying gs Mask = (gs{maskon = True}, "Mask on")
              | otherwise        = (gs, "You don't have a mask on you. Are you tripping?")
 wear _    gs                    = (gs, "This item isn't wearable")
 
+{- Press the switch. Only allow if player is in the Bedroon. Once it is
+   done, also update the 'maskon' flag in the game state.-}
 press :: ObjectType -> Action
 press Switch gs | lighton gs && location_id gs == Bedroom   = (gs{lighton = False}, "You've switched the lights off")
                 | location_id gs == Bedroom                 = (gs{lighton = True}, "lights on, now you can explore the house")
@@ -232,6 +236,8 @@ inv gs = (gs, showInv (inventory gs))
          showInv xs = "You are carrying:\n" ++ showInv' xs
          showInv' [x] = obj_longname x
          showInv' (x:xs) = obj_longname x ++ "\n" ++ showInv' xs
+         
+{- Quit the game. Once it is done, also update the 'finished' flag in the game state.-}
 
 quit :: Action
 quit gs = (gs { finished = True }, "Bye bye")
