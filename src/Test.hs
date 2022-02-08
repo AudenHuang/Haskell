@@ -135,11 +135,13 @@ prop_put objtype gs | not (carrying gs objtype)                                 
 
 -- Check if the object is in the inventory or in the room. If it is, then it should return the object description, else it should return "There's no such item."
 prop_examine :: ObjectType  -> GameData -> Bool
-prop_examine objtype gs | carrying gs objtype || objectHere objtype rmid = snd (examine objtype gs) == obj_desc obj
-                        | otherwise                                                  = snd (examine objtype gs) == "There's no such item."
+prop_examine objtype gs | carryObj || inRMObj = snd (examine objtype gs) == obj_desc obj
+                        | otherwise           = snd (examine objtype gs) == "There's no such item."
        where rmid = getRoomData gs
-             obj | carrying gs objtype = findObj objtype (inventory gs)
-                 | objectHere objtype rmid = findObj objtype (objects rmid)
+             carryObj = carrying gs objtype
+             inRMObj  = objectHere objtype rmid
+             obj | carryObj = findObj objtype (inventory gs)
+                 | inRMObj = findObj objtype (objects rmid)
 
 -- Check if the ObjectType is not Coffee, the game should ask the player what he/ she would want to pour. If the player is not carrying a coffee pot, the game will
 -- remind him/ her. If there is a full mug, the game will tell the player that it is already full. If there is no mug, the game will tell the player that he/ she
