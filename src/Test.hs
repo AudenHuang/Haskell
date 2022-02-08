@@ -74,7 +74,7 @@ instance Arbitrary GameData where
 
 -- Checking if RoomID type is returned when calling the move funciton. It also checks if "Nothing" is returned
 prop_move :: GameData -> Direction -> Room -> Bool
-prop_move gd dir rm | isJust(move dir rm) = fromJust (move dir rm) `elem` map fst (world gd)
+prop_move gs dir rm | isJust(move dir rm) = fromJust (move dir rm) `elem` map fst (world gs)
                     | otherwise = isNothing (move dir rm)
 
 -- Checking if the ObjectID is actaully an object from the room
@@ -91,28 +91,43 @@ prop_addObject obj rm = objectHere (obj_name obj) (addObject obj rm)
 
 -- Checking if the object is from the object list
        -- !!!
-prop_findObj :: ObjectType  -> [Object] -> Bool
-prop_findObj objtype ds = findObj objtype ( ds++ [objtype]) `elem` ds
+prop_findObj :: Object -> [Object] -> Bool
+prop_findObj obj ds = obj_name (findObj (obj_name obj) ( ds++ [obj])) == obj_name obj
 
 -- Check if the room is updated using the world data
 prop_updateRoom :: GameData -> RoomID -> Room -> Bool
-prop_updateRoom gd rmid rm = let new_gd = updateRoom gd rmid rm
-                             in getIndivRoom new_gd rmid == rm
+prop_updateRoom gs rmid rm = let new_gs = updateRoom gs rmid rm
+                             in getIndivRoom new_gs rmid == rm
 
 -- Check if the carrying object is inside the inventory
 prop_carrying :: GameData -> ObjectType  -> Bool
-prop_carrying gd objtype = carrying gd objtype == (findObj objtype (inventory gd) `elem` inventory gd)
+prop_carrying gs objtype = carrying gs objtype == (findObj objtype (inventory gs) `elem` inventory gs)
 
 -- Check if the player is carrying the object that is just added to inventory
        -- !!!
-prop_addInv :: GameData -> ObjectType  -> Bool
-prop_addInv gd objtype = carrying (addInv gd objtype) objtype
+prop_addInv :: GameData -> ObjectType -> RoomID -> Bool
+prop_addInv gs objtype rmid | objectHere objtype (getRoomData gs {location_id = rmid})       = carrying (addInv gs {location_id = rmid} objtype) objtype
+                          | otherwise                     = True
 
 -- Check if the player is NOT carrying the object that is just removed from the inventory
 prop_removeInv :: GameData -> ObjectType -> Bool
-prop_removeInv gd objtype = carrying (removeInv gd objtype) objtype == False
+prop_removeInv gs objtype = carrying (removeInv gs objtype) objtype == False
 
+-- Check three conditions. 1. Is the light turned on? If not, the game will ask player to turn it on.
+--                         2. If the move returns a Just, return ok
+--                         3. Otherwise, tell the player that it is a dead end
+prop_go :: Direction -> GameData -> Bool
+prop_go dir gs | not(lighton gs)                          = snd (go dir gs)  == "\nThe light is off. You can't move until you turn the light on\n"
+               | isJust (move dir (getRoomData gs))       = snd (go dir gs)  == "\nOK\n"
+               | otherwise                                = snd (go dir gs)  == "You can't go this way. It's a dead end."
 
+-- Check three conditions  1. Is the light turned on? If not, the game will ask player to turn it on.
+--                         2. If the light is on, check if the object is in the room. If yes, the player will pick it up.
+--                         3. Otherwise, the game will tell the user that there is no such item.
+prop_get :: ObjectType -> GameData -> Bool
+prop_get obj gs | not(lighton gs)                         = snd (get obj gs) == "\nThe light is off. You can't see what's in the room until you turn the lights on\n"
+                | objectHere obj (getRoomData gs)         = snd (get obj gs) == "\nYou've picked up the item\n"
+                | otherwise                               = snd (get obj gs) == "There's no such item."
 
 return []
 runTests = $quickCheckAll
