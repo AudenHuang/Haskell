@@ -135,8 +135,8 @@ prop_put :: ObjectType -> GameData -> Bool
 prop_put objtype gs | not (carrying gs objtype)           = snd (put objtype gs) == "This item isn't in your inventory. Are you tripping?"
                     | otherwise                           = snd (put objtype gs) == "object dropped"
 
+{- Check if the object is in the inventory or in the room. If it is, then it should return the object description, else it should return "There's no such item."-}
 prop_examine :: ObjectType  -> GameData -> Bool
--- prop_examine objtype gs | carrying gs objtype || objectHere objtype (getRoomData gs) = snd (examine objtype gs) == obj_desc objtype
 prop_examine objtype gs | carrying gs objtype || objectHere objtype (getRoomData gs) = snd (examine objtype gs) == obj_desc obj
                         | otherwise                                                  = snd (examine objtype gs) == "There's no such item."
        where obj | carrying gs objtype = findObj objtype (inventory gs)
@@ -150,13 +150,19 @@ prop_pour objtype gs | objtype /= Coffee                 = snd (pour objtype gs)
                      | otherwise                         = snd (pour objtype gs) == "Coffee poured!"
 
 prop_drink :: ObjectType -> GameData -> Bool
-prop_drink objtype gs | objtype /= Coffee                       = snd (drink objtype gs) == "What are you trying to drink"
-                      | suspiciouscoffee `elem` inventory gs    = snd (drink objtype gs) == "You've drank a cup of poison coffee."
-                | not (carrying gs Mug)                         = snd (drink objtype gs) == "You don't even have a mug"
-                | mug `elem` inventory gs                       = snd (drink objtype gs) == "Your mug is empty you mug. Pour some coffee into your mug first"
-                | fullmug `elem` inventory gs && caffeinated gs = snd (drink objtype gs) == "You've drank a cup of coffee already. You shouldn't drink more"
-                | otherwise                                     = snd (drink objtype gs) == "Coffee drank"
-
+prop_drink objtype gs | objtype /= Coffee                             = snd (drink objtype gs) == "What are you trying to drink"
+                      | suspiciouscoffee `elem` inventory gs          = snd (drink objtype gs) == "You've drank a cup of poison coffee."
+                      | not (carrying gs Mug)                         = snd (drink objtype gs) == "You don't even have a mug"
+                      | mug `elem` inventory gs                       = snd (drink objtype gs) == "Your mug is empty you mug. Pour some coffee into your mug first"
+                      | fullmug `elem` inventory gs && caffeinated gs = snd (drink objtype gs) == "You've drank a cup of coffee already. You shouldn't drink more"
+                      | otherwise                                     = snd (drink objtype gs) == "Coffee drank"
+{- Check the following conditions: 1. The object the player wants to open is a door
+                                   2. The player is in the Hall way
+                                   3. The player has the key
+                                   4. The player is caffeinated
+                                   5. The player has a mask on
+   If all the conditions are fulfilledm, then unlock and open the door
+-}
 prop_open :: ObjectType -> GameData -> Bool
 prop_open objtype gs | objtype /= Door            = snd(open objtype gs) == "You can't open this"
                      | location_id gs /= Hall     = snd(open objtype gs) == "There is no door here"
@@ -172,15 +178,17 @@ prop_wear objtype gs | objtype /= Mask                          = snd (wear objt
 
 
 prop_press :: ObjectType -> GameData -> Bool
-prop_press objtype gs | objtype /= Switch                          = snd(press objtype gs) == "You can't press this"
-                       | lighton gs && location_id gs == Bedroom   = snd(press objtype gs) == "You've switched the lights off"
-                       | location_id gs == Bedroom                 = snd(press objtype gs) == "lights on, now you can explore the house"
-                       | otherwise                                 = snd(press objtype gs) == "There's no light switch in this room"
+prop_press objtype gs | objtype /= Switch                         = snd(press objtype gs) == "You can't press this"
+                      | lighton gs && location_id gs == Bedroom   = snd(press objtype gs) == "You've switched the lights off"
+                      | location_id gs == Bedroom                 = snd(press objtype gs) == "lights on, now you can explore the house"
+                      | otherwise                                 = snd(press objtype gs) == "There's no light switch in this room"
 
+{-Test that if the object is in the inventory, the function inv will return a string telling the player that they are carryiong the object-}
 prop_inv1 :: GameData -> Object  -> Bool 
 prop_inv1 gs obj = snd (inv gs') == "You are carrying:\n" ++ obj_longname obj
        where gs' = gs{inventory = inventory gs ++ [obj]}
 
+{-Test that if there's nothing in the inventory, the function inv should return "You aren't carrying anything"-}
 prop_inv2 :: GameData -> Bool
 prop_inv2 gs = snd (inv gs) == "You aren't carrying anything"
 
