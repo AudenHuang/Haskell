@@ -111,7 +111,9 @@ dinningroom = Room "You are in the dinning room."
             [Exit South "To the south is a kitchen. " Kitchen,
              Exit West "To the west is a living room" LivingRoom]
             [coffeepot] 
-            
+-- New data about the hall for when we open the door
+
+openedhall = "You are in the hallway. The front door is open. Get out the house now!!"
 
 openedexits :: [Exit]
 openedexits = [Exit East "To the east is a kitchen. \n" Kitchen,
