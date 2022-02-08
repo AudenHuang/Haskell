@@ -85,7 +85,9 @@ executable adventure
       --Adventure,base >=4.11 && <4.12
       base >=4.11,
       mtl,
-      haskeline
+      haskeline,
+	  directory,
+	  deepseq
 
   -- Directories containing source files.
   hs-source-dirs:      src
