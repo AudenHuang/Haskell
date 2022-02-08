@@ -159,99 +159,99 @@ symbol xs                     =  token (string xs)
 Direction parsers
 -------------
 -}
-parseDirection                :: Parser Direction 
-parseDirection                =  do symbol "north"
-                                    return North
-                             ||| do symbol "south"
-                                    return South 
-                             ||| do symbol "east"
-                                    return East 
-                             ||| do symbol "west"
-                                    return West 
-                             ||| do symbol "out"
-                                    return Out 
+pDirection                :: Parser Direction 
+pDirection                =  do symbol "north"
+                                return North
+                         ||| do symbol "south"
+                                return South 
+                         ||| do symbol "east"
+                                return East 
+                         ||| do symbol "west"
+                                return West 
+                         ||| do symbol "out"
+                                return Out 
 
 {-
 Object parsers
 -------------
 -}
-parseObject                  :: Parser ObjectType 
-parseObject                 =  do symbol "mug"
-                                  return Mug
-                           ||| do symbol "coffee"
-                                  return Coffee
-                           ||| do symbol "switch"
-                                  return Switch
-                           ||| do symbol "key"
-                                  return Key
-                           ||| do symbol "door"
-                                  return Door
-                           ||| do symbol "mask"
-                                  return Mask
-                           ||| do symbol "cup"
-                                  return Cup
+pObject                  :: Parser ObjectType 
+pObject                 =  do symbol "mug"
+                              return Mug
+                       ||| do symbol "coffee"
+                              return Coffee
+                       ||| do symbol "switch"
+                              return Switch
+                       ||| do symbol "key"
+                              return Key
+                       ||| do symbol "door"
+                              return Door
+                       ||| do symbol "mask"
+                              return Mask
+                       ||| do symbol "cup"
+                              return Cup
 
 {-
 Command parsers
 -------------
 -}                                  
-parseGo :: Parser Command 
-parseGo = do symbol "go"
-             Go <$> parseDirection
+cGo :: Parser Command 
+cGo = do symbol "go"
+         Go <$> pDirection
 
-parseGet :: Parser Command  
-parseGet = do symbol "get"
-              Get <$> parseObject
+cGet :: Parser Command  
+cGet = do symbol "get"
+          Get <$> pObject
 
-parseDrop :: Parser Command  
-parseDrop = do symbol "drop"
-               Put <$> parseObject
+cDrop :: Parser Command  
+cDrop = do symbol "drop"
+           Put <$> pObject
               
-parsePour :: Parser Command  
-parsePour = do symbol "pour"
-               Pour <$> parseObject
+cPour :: Parser Command  
+cPour = do symbol "pour"
+           Pour <$> pObject
 
-parseExamine :: Parser Command  
-parseExamine = do symbol "examine"
-                  Examine <$> parseObject
+cExamine :: Parser Command  
+cExamine = do symbol "examine"
+              Examine <$> pObject
         
-parseDrink :: Parser Command  
-parseDrink = do symbol "drink"
-                Drink <$> parseObject
+cDrink :: Parser Command  
+cDrink = do symbol "drink"
+            Drink <$> pObject
 
-parseOpen :: Parser Command  
-parseOpen = do symbol "open"
-               Open <$> parseObject
+cOpen :: Parser Command  
+cOpen = do symbol "open"
+           Open <$> pObject
 
-parseWear :: Parser Command  
-parseWear = do symbol "wear"
-               Wear <$> parseObject
+cWear :: Parser Command  
+cWear = do symbol "wear"
+           Wear <$> pObject
               
-parsePress :: Parser Command 
-parsePress = do symbol "press"
-                Press <$> parseObject
+cPress :: Parser Command 
+cPress = do symbol "press"
+            Press <$> pObject
 
-parseInventory :: Parser Command 
-parseInventory = do symbol "inventory"
-                    return Inventory
+cInventory :: Parser Command 
+cInventory = do symbol "inventory"
+                return Inventory
 
-parseQuit :: Parser Command 
-parseQuit = do symbol "quit"
-               return Quit 
+cQuit :: Parser Command 
+cQuit = do symbol "quit"
+           return Quit 
 
 parseCommand :: Parser Command 
-parseCommand = do parseGo 
-              ||| parseGet
-              ||| parseDrop
-              ||| parsePour
-              ||| parseExamine
-              ||| parseDrink
-              ||| parseOpen
-              ||| parseWear
-              ||| parsePress
-              ||| parseInventory
-              ||| parseQuit
-              
+parseCommand = do cGo 
+              ||| cGet
+              ||| cDrop
+              ||| cPour
+              ||| cExamine
+              ||| cDrink
+              ||| cOpen
+              ||| cWear
+              ||| cPress
+              ||| cInventory
+              ||| cQuit
+
 {-Given an imputted string from the save file, the appropriate RoomID is returned-}
 parseRoom :: [Char] -> RoomID
 parseRoom str |str == "Bedroom" = Bedroom
