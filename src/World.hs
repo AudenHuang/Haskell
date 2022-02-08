@@ -110,7 +110,7 @@ livingroom = Room "You are in the living room."
 dinningroom = Room "You are in the dinning room."
             [Exit South "To the south is a kitchen. " Kitchen,
              Exit West "To the west is a living room" LivingRoom]
-            [coffeepot, mug]  
+            [coffeepot]  
 
 street = Room "You have made it out of the house."
               []
