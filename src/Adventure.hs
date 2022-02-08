@@ -50,7 +50,8 @@ repl state = do lift $ startgame state
                                        else repl state'
 
 
-
+{- Print the state (room desctiprion, exits and what the player can see) of the room (Bedroom) if the light is on, 
+   else print the msg telling the player that they should switch on the light to see their surrounding-}
 startgame :: GameData -> IO ()
 startgame state = if lighton state 
                   then do print state
