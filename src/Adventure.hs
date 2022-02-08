@@ -57,6 +57,7 @@ startgame state = if lighton state
                   else do putStrLn "The room is dark you can't see anything.\nYou can feel a light switch next to your hand.\nPlease press the switch to turn the lights on."
 
 
+{-takes in the current game state and wwrites it out to a text file as save data-}
 save :: GameData -> IO GameData
 save gd = do writeFile "save_data.txt" (show (location_id gd) ++ "\n" ++ show (inventory gd) ++ "\n" 
                ++ show (caffeinated gd) ++ "\n" ++ show (lighton gd)++ "\n" ++ show (maskon gd)++ "\n" ++
@@ -66,6 +67,7 @@ save gd = do writeFile "save_data.txt" (show (location_id gd) ++ "\n" ++ show (i
              return gd
              
 
+{-reads in the data from the save data text file and sets the current game state to the save data's state-}
 load :: InputT IO GameData
 load = do inFile <- lift $ openFile "save_data.txt" ReadMode
           gd <- lift $ hGetContents inFile
@@ -87,11 +89,13 @@ load = do inFile <- lift $ openFile "save_data.txt" ReadMode
           do repl initState
 
 
+{-Returns a Room data type by taking in game data, a room ID and list of items (objects), allowing an updated inventory when loading-}
 worldState :: GameData -> RoomID -> [[Char]] -> Room
 worldState gd rmid items = Room (room_desc (getIndivRoom gd rmid))
                                 (exits (getIndivRoom gd rmid))
                                 (parseInv items)
 
+{-Performs a check to see if a save file exists or not, if it exists, load is called, otherwise it is not-}
 loadCheck :: GameData -> InputT IO GameData
 loadCheck state = do ifFile <- lift $ doesFileExist "save_data.txt"
                      if ifFile
