@@ -1,11 +1,11 @@
 {-# LANGUAGE TemplateHaskell #-}
-module Test where
+module Main where
 import Test.QuickCheck
 import Test.QuickCheck.All
 import Data.Maybe
 import World
 import Actions
-import World (Direction, Room)
+import World (Direction, Room, ObjectType)
 import Actions (move)
 import Data.Maybe (fromJust)
 
@@ -15,17 +15,14 @@ instance Arbitrary Object where
                        return coffeepot,
                        return mask,
                        return key,
-                       return switch,
                        return suspiciouscoffee]
 
-instance Arbitrary ObjectID where
+instance Arbitrary ObjectType  where
     arbitrary = oneof [return Mug,
                        return Cup,
                        return Coffee,
                        return Mask,
-                       return Key,
-                       return Switch,
-                       return Door]
+                       return Key]
 
 instance Arbitrary Direction where
     arbitrary = oneof [return North,
@@ -70,52 +67,56 @@ instance Arbitrary Command where
                            (3, do obj <- arbitrary
                                   return (Press obj)),
                            (1, return Inventory),
-                           (1, retrun Quit)]
+                           (1, return Quit)]
 
 instance Arbitrary GameData where
-    arbitrary = return state
+    arbitrary = return initState 
 
 -- Checking if RoomID type is returned when calling the move funciton. It also checks if "Nothing" is returned
-       -- !!! RoomID ok?
-prop_move :: Direction -> Room -> Bool
-prop_move dir rm | isJust(move dir rm) = fromJust (move dir rm) `elem` RoomID
-                 | otherwise = isNothing (move dir rm)
+prop_move :: GameData -> Direction -> Room -> Bool
+prop_move gd dir rm | isJust(move dir rm) = fromJust (move dir rm) `elem` map fst (world gd)
+                    | otherwise = isNothing (move dir rm)
 
 -- Checking if the ObjectID is actaully an object from the room
-       -- !!! objectid to object?
-prop_objectHere :: ObjectID  -> Room -> Bool
-prop_objectHere objid rm = objectHere objid rm == (objid `elem` (objects rm))
+prop_objectHere :: ObjectType  -> Room -> Bool
+prop_objectHere objtype rm = objectHere objtype rm == (objtype `elem` map obj_name (objects rm))
 
 -- Checking if is updated, with the object removed after calling the method
-prop_removeObject :: ObjectID -> Room -> Bool
-prop_removeObject objid rm =  objectHere objid (removeObject objid rm) == False
+prop_removeObject :: ObjectType -> Room -> Bool
+prop_removeObject objtype rm =  objectHere objtype (removeObject objtype rm) == False
 
 -- Checking if object is added to the room when calling addObject function.
 prop_addObject :: Object -> Room -> Bool
 prop_addObject obj rm = objectHere (obj_name obj) (addObject obj rm)
 
 -- Checking if the object is from the object list
-prop_findObj :: ObjectID -> [Object] -> Bool
-prop_findObj obj ds = findObj obj ds `elem` ds
+       -- !!!
+prop_findObj :: ObjectType  -> [Object] -> Bool
+prop_findObj objtype ds = findObj objtype ds `elem` ds
 
 -- Check if the room is updated using the world data
-       -- !!! check updated room
 prop_updateRoom :: GameData -> RoomID -> Room -> Bool
 prop_updateRoom gd rmid rm = let new_gd = updateRoom gd rmid rm
-                             in getIndivRoom gd rmid == rm
+                             in getIndivRoom new_gd rmid == rm
 
--- Check if the carrying object is inside the inventory 
-       -- !!!!Need objid to obj
-prop_carrying :: GameData -> ObjectID -> Bool
-prop_carrying gd objid = carrying gd objid == (objid `elem` inventory gd)
+-- Check if the carrying object is inside the inventory
+prop_carrying :: GameData -> ObjectType  -> Bool
+prop_carrying gd objtype = carrying gd objtype == (findObj objtype (inventory gd) `elem` inventory gd)
 
-prop_addInv :: GameData -> ObjectID -> Bool
-prop_addInv gd objid = (addInv gd objid) `elem` GameData
+-- Check if the player is carrying the object that is just added to inventory
+       -- !!!
+prop_addInv :: GameData -> ObjectType  -> Bool
+prop_addInv gd objtype = carrying (addInv gd objtype) objtype
 
-prop_removeInv :: GameData -> ObjectID -> Bool
-prop_removeInv gd objid = (removeInv gd objid) `elem` GameData
+-- Check if the player is NOT carrying the object that is just removed from the inventory
+prop_removeInv :: GameData -> ObjectType -> Bool
+prop_removeInv gd objtype = carrying (removeInv gd objtype) objtype == False
 
 
 
 return []
 runTests = $quickCheckAll
+
+main :: IO Bool
+main = do putStrLn "Start Testing"
+          runTests
