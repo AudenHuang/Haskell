@@ -48,28 +48,28 @@ instance Arbitrary RoomID where
 instance Arbitrary GameData where
     arbitrary = return initState
 
-{- Checking if RoomID type is returned when calling the move funciton. It also checks if "Nothing" is returned -}
+{- Check if RoomID type is returned when calling the move funciton. It also checks if "Nothing" is returned -}
 prop_move :: GameData -> Direction -> Room -> Bool
 prop_move gs dir rm | isJust(move dir rm) = fromJust (move dir rm) `elem` map fst (world gs)
                     | otherwise = isNothing (move dir rm)
 
-{- Checking if the ObjectID is actaully an object from the room -}
+{- Check if the ObjectID is actaully an object from the room -}
 prop_objectHere :: ObjectType  -> Room -> Bool
 prop_objectHere objtype rm = objectHere objtype rm == (objtype `elem` map obj_name (objects rm))
 
-{- Checking if is updated, with the object removed after calling the method -}
+{- Check if room is updated, with the object removed after calling the method -}
 prop_removeObject :: ObjectType -> Room -> Bool
 prop_removeObject objtype rm =  objectHere objtype (removeObject objtype rm) == False
 
-{- Checking if object is added to the room when calling addObject function. -}
+{- Check if object is added to the room when calling addObject function. -}
 prop_addObject :: Object -> Room -> Bool
 prop_addObject obj rm = objectHere (obj_name obj) (addObject obj rm)
 
-{- Checking if the object is from the object list -}
+{- Check if the object_name of the object is the same as the object_name of the findObj function -}
 prop_findObj :: Object -> [Object] -> Bool
 prop_findObj obj ds = obj_name (findObj (obj_name obj) ( ds++ [obj])) == obj_name obj
 
-{- Check if the room is updated using the world data -}
+{- Check if the same room is returned after updating -}
 prop_updateRoom :: GameData -> RoomID -> Room -> Bool
 prop_updateRoom gs rmid rm = let new_gs = updateRoom gs rmid rm
                              in getIndivRoom new_gs rmid == rm
