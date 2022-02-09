@@ -27,7 +27,6 @@ description:         This project is a simple interactive text adventure game in
                      - drink OBJECT
                      - open OBJECT
                      - wear OBJECT
-                     - use OBJECT
                      - press OBJECT*
                      - inventory
                      - quit
