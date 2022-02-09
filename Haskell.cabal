@@ -16,7 +16,42 @@ version:             0.1.0.0
 synopsis:            Interactive text based game
 
 -- A longer description of the package.
--- description:
+description:         This project is a simple interactive text adventure game in Haskell.
+                     To win this game the user find a way to leave the house.
+                     Player can use the following commands to explore the house.
+                     - go DIRECTION
+                     - get OBJECT
+                     - put OBJECT
+                     - examine OBJECT
+                     - pour OBJECT
+                     - drink OBJECT
+                     - open OBJECT
+                     - wear OBJECT
+                     - use OBJECT
+                     - press OBJECT*
+                     - inventory
+                     - quit
+                     - save
+                     - load
+
+                    Where the DIRECTION s are as follows:
+                    - north
+                    - south
+                    - east
+                    - west
+                    - out
+
+                    Where the OBJECT s are as follows:
+                    - cup
+                    - coffee
+                    - key
+                    - door
+                    - mug
+                    - mask
+                    - switch
+                    * commands may apply to certain OBJECT (s) only
+
+                    Enjoy your escape.
 
 -- The license under which the package is released.
 license:             AllRightsReserved
