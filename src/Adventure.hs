@@ -25,9 +25,13 @@ process state input = case runParser input of
                             Just cmd -> actions cmd state
                             Nothing -> (state, "I don't understand")
 
+{- Given the GameData, it will decide what to do and choose whether to 
+   continue the game giving InputT IO GameData. Haskeline is used so that
+   command suggestions can be given to the player if "tab" is pressed-}
 repl :: GameData -> InputT IO GameData
 repl state | finished state = return state
 
+{- lift $ is used to convert the output type to InputT IO.-}
 repl state = do lift $ startgame state
                 lift $ putStr "\nWhat now?\n\n"
                 lift $ hFlush stdout
@@ -105,6 +109,7 @@ loadCheck state = do ifFile <- lift $ doesFileExist "save_data.txt"
                              repl state
 
 
+{-Valid command words suggestions for the game-}
 validWords :: [String]
 validWords = ["go", "get", "put", "examine", "pour", "drink", "open", "wear", "use", "press", "inventory", "quit", "save", "load"]
 
