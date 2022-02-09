@@ -45,28 +45,6 @@ instance Arbitrary RoomID where
                        return Hall,
                        return Street]
 
-instance Arbitrary Command where
-    arbitrary = frequency [(4, do dir <- arbitrary
-                                  return (Go dir)),
-                           (7, do obj <- arbitrary
-                                  return (Get obj)),
-                           (7, do obj <- arbitrary
-                                  return (Put obj)),
-                           (7, do obj <- arbitrary
-                                  return (Examine obj)),
-                           (7, do obj <- arbitrary
-                                  return (Pour obj)),
-                           (3, do obj <- arbitrary
-                                  return (Drink obj)),
-                           (3, do obj <- arbitrary
-                                  return (Open obj)),
-                           (3, do obj <- arbitrary
-                                  return (Wear obj)),
-                           (3, do obj <- arbitrary
-                                  return (Press obj)),
-                           (1, return Inventory),
-                           (1, return Quit)]
-
 instance Arbitrary GameData where
     arbitrary = return initState
 
@@ -206,7 +184,7 @@ prop_press objtype gs | objtype /= Switch                                       
                       | location_id gs == Bedroom                                   = snd(press objtype gs) == "lights on, now you can explore the house"
                       | otherwise                                                   = snd(press objtype gs) == "There's no light switch in this room"
 
-{-Test that if the object is in the inventory, the function inv will return a string telling the player that they are carryiong the object-}
+{-Test that if the object is in the inventory, the function inv will return a string telling the player that they are carrying the object-}
 prop_inv1 :: GameData -> Object  -> Bool 
 prop_inv1 gs obj = snd (inv gs') == "You are carrying:\n" ++ obj_longname obj
        where gs' = gs{inventory = inventory gs ++ [obj]}
