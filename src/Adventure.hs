@@ -111,7 +111,7 @@ loadCheck state = do ifFile <- lift $ doesFileExist "save_data.txt"
 
 {-Valid command words suggestions for the game-}
 validWords :: [String]
-validWords = ["go", "get", "put", "examine", "pour", "drink", "open", "wear", "use", "press", "inventory", "quit", "save", "load"]
+validWords = ["go", "get", "put", "examine", "pour", "drink", "open", "wear", "press", "inventory", "quit", "save", "load"]
 
 -- Given the string so far, return a list of possible combinations from
 -- 'validWords'
