@@ -113,7 +113,6 @@ executable adventure
   hs-source-dirs: ., src
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      --Adventure,base >=4.11 && <4.12
       base >=4.11,
       mtl,
       haskeline,
